@@ -1,0 +1,33 @@
+{
+  "name": "sketch-loader",
+  "version": "1.0.0",
+  "description": "sketch-loader",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/muyoungko/sketch-loader.git"
+  },
+  "keywords": [
+    "sketch-loader"
+  ],
+  "author": "muyoungko",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/muyoungko/sketch-loader/issues"
+  },
+  "homepage": "https://github.com/muyoungko/sketch-loader#readme",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "ejs": "^2.5.8",
+    "express": "^4.16.3",
+    "mongodb": "^3.0.6",
+    "nunjucks": "^3.1.2"
+  },
+  "devDependencies": {
+    "gulp-nunjucks-render": "^2.2.2",
+    "nodemon": "^1.17.3"
+  }
+}
