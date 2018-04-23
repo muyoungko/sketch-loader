@@ -37,32 +37,40 @@
         <tbody>
 
           <% for (var i = 0; i < list.length; i++) { %>
-          <tr>
-            <td class="py-1">
-              <img src="../../images/faces-clipart/pic-1.png" alt="image"/>
-            </td>
-            <td>
-              Shocking Deal
-            </td>
-            <td>
-              <%=list[i]['author']%>
-            </td>
-            <td>
-              <label class="badge badge-danger">Draft</label>
-            </td>
-            <td>
-              <i class="fa fa-cloud-download"></i> Download
-            </td>
-            <td>
-              <%=list[i]['revision']%>
-            </td>
-            <td>
-              <%=new Date(Number.parseInt(list[i]['update'])).toISOString();%>
-            </td>
-            <td>
-              >>
-            </td>
-          </tr>
+
+              <tr>
+                <td class="py-1">
+                  <img src="../../images/faces-clipart/pic-1.png" alt="image"/>
+                </td>
+                <td>
+                  <a href="/detail?key=<%=list[i]['key']%>&revision=<%=list[i]['revision']%>">
+                    Shocking Deal
+                  </a>
+                </td>
+                <td>
+                  <%=list[i]['author']%>
+                </td>
+                <td>
+                  <label class="badge badge-danger">Draft</label>
+                </td>
+                <td>
+                  <a href="/downloadSketch?key=<%=list[i]['key']%>&revision=<%=list[i]['revision']%>">
+                    <i class="fa fa-cloud-download"></i> Download
+                  </a>
+                </td>
+                <td>
+                  <%=list[i]['revision']%>
+                </td>
+                <td>
+                  <%=new Date(Number.parseInt(list[i]['update'])).toISOString();%>
+                </td>
+                <td>
+                  <a href="/detail?key=<%=list[i]['key']%>&revision=<%=list[i]['revision']%>">
+                  >>
+                  </a>
+                </td>
+
+              </tr>
           <%}%>
         </tbody>
       </table>

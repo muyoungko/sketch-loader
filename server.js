@@ -31,16 +31,36 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 	});
 
 	app.get('/main', (req, res) => {
-			db.collection('entity').find({}).project({revision: 1, author: 1, update:1}).toArray(function(err, results) {
+			db.collection('entity').find({}).project({key:1, revision: 1, author: 1, update:1}).toArray(function(err, results) {
 				// console.log(results);
 				res.render('template.ejs', {body_page:'main/main.ejs', list:results});
 			})
 		});
 
+	app.get('/downloadSketch', (req, res) => {
+			var json = {};
+			json['key'] = req.query.key;
+			json['revision'] = req.query.revision;
+			var previous = db.collection('entity').findOne(json,{raw:-1} ,function(err, results){
+				var buffer = base64_decode(results['raw']);
+				fileName = "a.sketch";
+				res.writeHead(200, {
+						"Content-Disposition": "attachment;filename=" + fileName,
+						"Content-Type": "application/octet-stream",
+						"Content-Lenght" : ""+buffer.length
+				});
+    		res.end(buffer)
+			});
+		});
+
 	app.get('/detail', (req, res) => {
-			db.collection('quotes').find().toArray(function(err, results) {
-				res.render('template.ejs', {body_page:'detail/detail.ejs'});
-			})
+			// var json = {};
+			// json['key'] = req.query.key;
+			// json['revision'] = req.query.revision;
+			// var previous = db.collection('entity').findOne(json,{raw:-1} ,function(err, results){
+			// 	res.render('template.ejs', {body_page:'detail/detail.ejs', list:results});
+			// });
+			res.render('template.ejs', {body_page:'detail/detail.ejs'});
 		});
 
 	app.post('/deploy', (req, res) => {
@@ -155,11 +175,12 @@ function base64_encode(file) {
 }
 
 
-function base64_decode(base64str, file) {
+function base64_decode(base64str) {
     // create buffer object from base64 encoded string, it is important to tell the constructor that the string is base64 encoded
     var bitmap = new Buffer(base64str, 'base64');
+		return bitmap;
     // write buffer to file
-    fs.writeFileSync(file, bitmap);
+    //fs.writeFileSync(file, bitmap);
 }
 
 
