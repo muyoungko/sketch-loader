@@ -27,11 +27,16 @@
               Revision
             </th>
             <th>
+              Update
+            </th>
+            <th>
               Detail
             </th>
           </tr>
         </thead>
         <tbody>
+
+          <% for (var i = 0; i < list.length; i++) { %>
           <tr>
             <td class="py-1">
               <img src="../../images/faces-clipart/pic-1.png" alt="image"/>
@@ -40,7 +45,7 @@
               Shocking Deal
             </td>
             <td>
-              muyoungko
+              <%=list[i]['author']%>
             </td>
             <td>
               <label class="badge badge-danger">Draft</label>
@@ -49,12 +54,16 @@
               <i class="fa fa-cloud-download"></i> Download
             </td>
             <td>
-              1
+              <%=list[i]['revision']%>
+            </td>
+            <td>
+              <%=new Date(Number.parseInt(list[i]['update'])).toISOString();%>
             </td>
             <td>
               >>
             </td>
           </tr>
+          <%}%>
         </tbody>
       </table>
     </div>
