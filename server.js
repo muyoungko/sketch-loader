@@ -8,7 +8,9 @@ const extract = require('extract-zip');
 const JSON = require('JSON');
 const mv = require('mv');
 const rmdirSync = require('rmdir-sync');
-const cmd     = require('node-command-line'),
+const cmd     = require('node-command-line');
+
+
 Promise = require('bluebird');
 
 path = require('path');
@@ -20,7 +22,46 @@ app.set('views', [path.join(__dirname, '/views')]);
 app.set('view engine', 'ejs');
 app.use(express.static('.'));
 
+
+const rules = [
+	{
+			type:'targetComponent',
+			name:'sketch타겟',
+			description:'필수 - 변환하고자 할 스캐치의 노드를 선택해주세요.',
+			icon:'fa-superpowers',
+			unique: true,
+			elements:['node']
+	},
+	// {
+	// 		type:'block',
+	// 		name:'대응PUI블록',
+	// 		description:'필수 - 어떤 PUI블록으로 변환시킬지 선택해주세요',
+	// 		icon:'fa-cube',
+	// 		unique: true,
+	// 		elements:['block']
+	// },
+	{
+			type:'mappingImage',
+			name:'이미지매핑',
+			description:'스캐치의 노드를 PUI블록의 데이터와 매핑합니다',
+			icon:'fa-file-photo-o',
+			unique: false,
+			elements:['node','data']
+	},
+	{
+			type:'mappingText',
+			name:'텍스트매핑',
+			description:'스캐치의 노드를 PUI블록의 텍스트와 매핑합니다',
+			icon:'fa-file-excel-o',
+			unique: false,
+			elements:['node','data']
+	},
+];
+
+
 const MongoClient = require('mongodb').MongoClient
+const ObjectId = require('mongodb').ObjectId;
+
 MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch-loader', (err, database) => {
 	if (err) return console.log(err)
 	console.log('MongoClient connected');
@@ -32,7 +73,7 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 
 	app.get('/main', (req, res) => {
 			db.collection('entity').find({}).project({key:1, revision: 1, author: 1, update:1}).toArray(function(err, results) {
-				// console.log(results);
+				console.log(results);
 				res.render('template.ejs', {body_page:'main/main.ejs', list:results});
 			})
 		});
@@ -54,13 +95,147 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 		});
 
 	app.get('/detail', (req, res) => {
-			// var json = {};
-			// json['key'] = req.query.key;
-			// json['revision'] = req.query.revision;
-			// var previous = db.collection('entity').findOne(json,{raw:-1} ,function(err, results){
-			// 	res.render('template.ejs', {body_page:'detail/detail.ejs', list:results});
-			// });
-			res.render('template.ejs', {body_page:'detail/detail.ejs'});
+			var json = {};
+			json['key'] = req.query.key;
+			json['revision'] = req.query.revision;
+
+			db.collection('entity').find(json).project({key:true,revision:true, cloudJson:true}).toArray(function(err, results){
+				if(results.length == 0)
+				{
+					res.send('wrong parameter');
+					return;
+				}
+
+				var json = {};
+				json['key'] = req.query.key;
+				json['revision'] = req.query.revision;
+				var type = req.query.type;
+				var ruleId = req.query.ruleId;
+
+				db.collection('entityRule').find(json).project({}).toArray(function(err, ruleInstance){
+					res.render('template.ejs', {body_page:'detail/detail.ejs', entity:results[0], rules:rules, ruleInstance:ruleInstance});
+				});
+			});
+		});
+
+	app.get('/detail_rule_form', (req, res) => {
+		var json = {};
+		var type = req.query.type;
+		var ruleId = req.query.ruleId;
+
+		console.log(req.query.ruleId);
+		if(req.query.ruleId != 'null')
+		{
+			json['ruleId'] = req.query.ruleId;
+			db.collection('entityRule').find(json).project({}).toArray(function(err, ruleInstance){
+				console.log(ruleInstance);
+				var rule = getRuleMeta(rules, type);
+				res.render('detail/rule/template.ejs', {rule_body:type+'.ejs'
+					, key:req.query.key, revision:req.query.revision, rule:rule, type:type
+					, ruleId:ruleId, ruleInstance:ruleInstance[0]
+				});
+			});
+		}
+		else {
+			var rule = getRuleMeta(rules, type);
+			res.render('detail/rule/template.ejs', {rule_body:type+'.ejs'
+				, key:req.query.key, revision:req.query.revision, rule:rule, type:type
+				, ruleId:ruleId, ruleInstance:{}
+			});
+		}
+
+
+	});
+
+	app.get('/detail_rule_delete', (req, res) => {
+		var json = {};
+		if(req.query.ruleId != 'null')
+		{
+			json['ruleId'] = req.query.ruleId;
+			console.log('saveRdetail_rule_delete ' + req.query.ruleId);
+		}
+
+
+		db.collection('entityRule').remove(json, (err, result) => {
+			if (err) {
+				res.send(err);
+				return console.log(err);
+			}
+			res.redirect('/detail?key='+req.query.key+'&revision='+req.query.revision);
+
+			// generateCloudJsonHtml(key, revision, function(success, err){
+			// 		if(success)
+			// 		{
+			// 			//res.redirect('/detail?key='+key);
+			// 			res.send('finished');
+			// 		}
+			// 		else {
+			// 			console.log(err);
+			// 			return res.status(500).send(commandRes);
+			// 		}
+			//	});
+			});
+	});
+	app.get('/saveRule', (req, res) => {
+		var json = {};
+		var newvalue = {};
+		if(isUniqueRule(rules, req.query.type))
+		{
+			json['key'] = req.query.key;
+			json['revision'] = req.query.revision;
+			json['type'] = req.query.type;
+			console.log('saveRule - unique');
+		}
+
+		if(req.query.ruleId != 'null')
+		{
+			json['ruleId'] = req.query.ruleId;
+			console.log('saveRule - update');
+		}
+		else {
+			newvalue['ruleId'] = json['ruleId'] = String(Date.now());
+			console.log('saveRule - new');
+		}
+
+		var type = req.query.type;
+		newvalue['key'] = req.query.key;
+		newvalue['revision'] = req.query.revision;
+		newvalue['type'] = type;
+		newvalue['update'] = String(Date.now());
+		newvalue['value'] = {};
+		newvalue['value']['select1'] = req.query.select1;
+		newvalue['value']['select2'] = req.query.select2;
+		newvalue['value']['select3'] = req.query.select3;
+		newvalue['value']['select4'] = req.query.select4;
+		newvalue['value']['select5'] = req.query.select5;
+		db.collection('entityRule').update(json, { $set: newvalue }, { upsert: true }, (err, result) => {
+			if (err) {
+				res.send(err);
+				return console.log(err);
+			}
+			res.redirect('/detail?key='+req.query.key+'&revision='+req.query.revision);
+
+			// generateCloudJsonHtml(key, revision, function(success, err){
+			// 		if(success)
+			// 		{
+			// 			//res.redirect('/detail?key='+key);
+			// 			res.send('finished');
+			// 		}
+			// 		else {
+			// 			console.log(err);
+			// 			return res.status(500).send(commandRes);
+			// 		}
+			//	});
+			});
+	});
+
+	app.get('/detail_preview', (req, res) => {
+			var json = {};
+			json['key'] = req.query.key;
+			json['revision'] = req.query.revision;
+			db.collection('entity').find(json).project({key:true,revision:true,cloudHtml:true}).toArray(function(err, results){
+				res.render('detail/detail_preview.ejs', {entity:results[0]});
+			});
 		});
 
 	app.post('/deploy', (req, res) => {
@@ -82,7 +257,6 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 
 				var key = getSketchKey(outpath);
 				var revision = '10000';
-				var json = {};
 
 				fs.unlinkSync(zip);
 				if (!fs.existsSync(path.join(__dirname, 'file', key)))
@@ -104,43 +278,34 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 						return console.log(err);
 					};
 
-					var command = 'java -jar cloudlayoutconverter.jar c "/Users/muyoungko/Documents/sketch-loader/file/'+key+'/'+revision+'" "{\"targetComponent\":\"ProductDeal_Shocking\"}"'
-					runSingleCommandWithWait(command, function(commandRes){
+					var json = {};
+					json['key'] = key;
+					json['revision'] = revision;
 
-						var cloudJson = JSON.parse(commandRes);
-						json['key'] = key;
-						json['revision'] = revision;
+					//TODO 계정관리
+					var newvalue = {'key': key, 'revision': revision ,'raw':b64,
+						'author':'muyoungko',
+						'update': String(Date.now())
+					};
+					db.collection('entity').update(json, { $set: newvalue }, { upsert: true }, (err, result) => {
+						if (err) {
+							func(false, err);
+						}
 
-						//TODO 계정관리
-
-						var nn = {'key': key, 'revision': revision ,'raw':b64,
-							'author':'muyoungko',
-							'update': String(Date.now())
-						};
-
-						console.log('-------------------------------');
-						var previous = db.collection('entity').findOne(json);
-						console.log('-------------------------------');
-						console.log(previous);
-
-
-						nn['cloudJson'] = commandRes;
-						var newvalues = { $set: nn };
-						db.collection('entity').update(json, newvalues, { upsert: true }, (err, result) => {
-							if (err) {
-								res.send(err);
-								return console.log(err);
-							}
-							console.log('saved to database');
-							console.log(b64.length);
-							//res.redirect('/detail?key='+key);
-							res.send('finished');
-						})
-					}, function(commandRes){
-						return res.status(500).send(commandRes);
-					});
+						generateCloudJsonHtml(key, revision, function(success, err){
+								if(success)
+								{
+									//res.redirect('/detail?key='+key);
+									res.send('finished');
+								}
+								else {
+									console.log(err);
+									return res.status(500).send(commandRes);
+								}
+						});
 
 
+					})
 				});
 		  });
 		});
@@ -165,6 +330,55 @@ function getSketchKey(sketch_dir) {
 			}
 	}
 	throw error;
+}
+
+function isUniqueRule(rules, type)
+{
+	for(var i=0;i<rules.length;i++)
+		if(rules[i]['type'] == type && rules[i]['unique'])
+			return true;
+	return false;
+}
+function getRuleMeta(rules, type)
+{
+	for(var i=0;i<rules.length;i++)
+		if(rules[i]['type'] == type)
+			return rules[i];
+	return null;
+}
+
+function generateCloudJsonHtml(key, revision, func)
+{
+	var command1 = 'java -jar cloudlayoutconverter.jar c "/Users/muyoungko/Documents/sketch-loader/file/'+key+'/'+revision+'" "{\"targetComponent\":\"ProductDeal_Shocking\"}"'
+	runSingleCommandWithWait(command1, function(couldJsonRes){
+		var command2 = 'java -jar cloudlayoutconverter.jar cw "/Users/muyoungko/Documents/sketch-loader/file/'+key+'/'+revision+'" "{\"targetComponent\":\"ProductDeal_Shocking\"}"'
+		runSingleCommandWithWait(command2, function(htmlJsonRes){
+
+			var cloudJson = JSON.parse(couldJsonRes);
+			var json = {};
+			json['key'] = key;
+			json['revision'] = revision;
+
+			//TODO 계정관리
+			var newvalue = {'key': key, 'revision': revision ,
+				'author':'muyoungko',
+				'update': String(Date.now())
+			};
+			newvalue['cloudJson'] = couldJsonRes;
+			newvalue['cloudHtml'] = htmlJsonRes;
+			db.collection('entity').update(json, { $set: newvalue }, { upsert: true }, (err, result) => {
+				if (err) {
+					func(false, err);
+				}
+				func(true);
+			})
+		}, function(commandRes){
+			func(false, commandRes);
+		});
+
+	}, function(commandRes){
+		func(false, commandRes);
+	});
 }
 
 function base64_encode(file) {

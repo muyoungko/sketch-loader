@@ -145,7 +145,7 @@
         return false;
     }
 
-    function construct(opt, json, root, path) {
+    function constructOrigin(opt, json, root, path) {
         path = path || '';
 
         root.children('.item').remove();
@@ -159,9 +159,12 @@
 
             if (isObject(json[key]) || isArray(json[key])) {
                 addExpander(item);
+                item.append(property);
+            }
+            else {
+                item.append(property).append(value);
             }
 
-            item.append(property).append(value);
             root.append(item);
 
             property.val(key).attr('title', key);
@@ -179,12 +182,61 @@
             }
         }
 
-        if (isObject(json) || isArray(json)) {
-            addListAppender(root, function () {
-                addNewValue(json);
-                construct(opt, json, root, path);
-                opt.onchange(parse(stringify(opt.original)));
-            })
+        // if (isObject(json) || isArray(json)) {
+        //     addListAppender(root, function () {
+        //         addNewValue(json);
+        //         construct(opt, json, root, path);
+        //         opt.onchange(parse(stringify(opt.original)));
+        //     })
+        // }
+    }
+
+
+    function construct(opt, json, root, path) {
+        path = path || '';
+
+        root.children('.item').remove();
+
+        for (var key in json) {
+            if (!json.hasOwnProperty(key)) continue;
+
+            var item     = $('<div>',   { 'class': 'item', 'data-path': path }),
+                property =   $(opt.propertyElement || '<input>', { 'class': 'property' , 'readonly':''}),
+                value    =   $(opt.valueElement || '<input>', { 'class': 'value' , 'readonly':''   });
+
+
+
+            if (isObject(json[key]) || isArray(json[key])) {
+                addExpander(item);
+                item.append(property);
+            }
+            else {
+                item.append(property).append(value);
+            }
+
+            property.val(key).attr('title', key);
+            var val = stringify(json[key]);
+            value.val(val).attr('title', val);
+
+            assignType(item, json[key]);
+
+            property.change(propertyChanged(opt));
+            value.change(valueChanged(opt));
+            property.click(propertyClicked(opt));
+
+            if (isObject(json[key]) || isArray(json[key])) {
+                construct(opt, json[key], item, (path ? path + '.' : '') + key);
+            }
+
+            if(key=='0sdfsdf')
+            {
+              console.log(item.children().eq(2).children());
+              root.append(item.children().eq(2).children());
+            }
+            else
+            {
+              root.append(item);
+            }
         }
     }
 

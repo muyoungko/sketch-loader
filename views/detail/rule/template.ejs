@@ -1,0 +1,19 @@
+
+  <div class="card">
+    <div class="card-body">
+      <h4 class="card-title">룰 상세 설정 - <%=rule['name']%></h4>
+        <p class="card-description">
+        <%=rule['description']%>
+        </p>
+        <form class="forms-sample" method="get" action="/saveRule">
+          <input name="key" value="<%=key%>" type="hidden">
+          <input name="revision" value="<%=revision%>" type="hidden">
+          <input name="type" value="<%=type%>" type="hidden">
+          <input name="ruleId" value="<%=ruleId%>" type="hidden">
+          <%- include(rule_body) %>
+
+          <button type="submit" class="btn btn-success mr-2">저장</button>
+          
+        </form>
+      </div>
+    </div>

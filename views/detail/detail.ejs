@@ -3,57 +3,25 @@
 <script src="js/jsontree/jquery.jsoneditor.js"></script>
 
 <div class="row">
-  <div class="col-lg-4 grid-margin">
+  <div class="col-lg-12 grid-margin">
     <div class="card">
       <div class="card-body">
-        <h4 class="card-title">미리보기</h4>
-        <div class="icons-list row">
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-address-book"></i></div>
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-address-card"></i></div>
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-address-book-o"></i></div>
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-address-card-o"></i></div>
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-bandcamp"></i> </div>
+        <h4 class="card-title">
+          미리보기
+          <a href="/detail_preview?key=<%=entity['key']%>&revision=<%=entity['revision']%>">
+            전체화면>>
+          </a>
+        </h4>
+        <div style='position:relative;height:280px;width:280px;outline: 1px dashed red;'>
+          <%-entity['cloudHtml']%>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="col-lg-4 grid-margin">
-    <div class="card">
-      <div class="card-body">
-        <h4 class="card-title">Cloud Json</h4>
-
-        <div id='editor_holder' class='json-editor'></div>
-
-        <script>
-          var myjson = { any: { json: { value: 1 } } };
-          var opt = {
-              change: function(data) { /* called on every change */ },
-              propertyclick: function(path) { /* called when a property is clicked with the JS path to that property */ }
-          };
-          /* opt.propertyElement = '<textarea>'; */ // element of the property field, <input> is default
-          /* opt.valueElement = '<textarea>'; */  // element of the value field, <input> is default
-          $('#editor_holder').jsonEditor(myjson, opt);
-        </script>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-lg-4 grid-margin">
-    <div class="card">
-      <div class="card-body">
-        <h4 class="card-title">대응 Data API</h4>
-        <div class="icons-list row">
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-address-book"></i></div>
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-address-card"></i></div>
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-address-book-o"></i></div>
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-address-card-o"></i></div>
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-bandcamp"></i> </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
+
+
 
 <div class="row">
   <div class="col-lg-4 grid-margin">
@@ -61,42 +29,58 @@
       <div class="card-body">
         <h4 class="card-title">룰 판넬</h4>
         <div class="icons-list row">
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-address-book"></i></div>
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-address-card"></i></div>
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-address-book-o"></i></div>
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-address-card-o"></i></div>
-          <div class="col-sm-8 col-md-4 col-lg-4"> <i class="fa fa-bandcamp"></i> </div>
+          <% for (var i = 0; i < rules.length; i++) { %>
+            <div class="col-sm-8 col-md-4 col-lg-4">
+              <a href="javascript:ruleFormLoad('<%=rules[i]['type']%>', null);">
+                <i class="fa <%=rules[i]['icon']%>"></i><%=rules[i]['name']%>
+              </a>
+            </div>
+          <%}%>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="col-lg-8 grid-margin">
-    <div class="card">
-      <div class="card-body">
-        <h4 class="card-title">룰 상세 설정</h4>
-        <p class="card-description">
-          이미지 매핑 - 룰 ID
-        </p>
-        <form class="forms-sample">
-          <div class="form-group row">
-            <label for="exampleInputEmail2" class="col-sm-3 col-form-label">Email</label>
-            <div class="col-sm-9">
-              <input type="email" class="form-control" id="exampleInputEmail2" placeholder="Enter email">
-            </div>
-          </div>
-          <div class="form-group row">
-            <label for="exampleInputPassword2" class="col-sm-3 col-form-label">Password</label>
-            <div class="col-sm-9">
-              <input type="password" class="form-control" id="exampleInputPassword2" placeholder="Password">
-            </div>
-          </div>
-          <button type="submit" class="btn btn-success mr-2">저장</button>
-          <button class="btn btn-light">취소</button>
-        </form>
-      </div>
-    </div>
+  <script>
+  function ruleFormLoad(type, ruleId)
+  {
+    $.ajax({
+      url: "/detail_rule_form?key=<%=entity['key']%>&revision=<%=entity['revision']%>&type="+ type +"&ruleId="+ruleId
+    }).done(function(res) {
+      $('#ruleDetailContainer' ).html( res );
+    });
+  };
+  <%
+    var targetComponentRuleId = null;
+    for(var i=0;i<ruleInstance.length;i++)
+    {
+      if('targetComponent' == ruleInstance[i]['type'])
+      {
+        targetComponentRuleId = ruleInstance[i]['ruleId'];
+        break;
+      }
+    }
+  %>
+  $(function(){
+    ruleFormLoad('targetComponent', <%-targetComponentRuleId!=null? "'"+targetComponentRuleId+"'":"null"%>);
+
+    $( "#sketchSelector" ).dialog({
+      autoOpen: false,
+      width: 600,
+      height: 500,
+      title: 'sketch 노드 선택',
+    });
+  });
+
+  function pickSketch(callbackInputId)
+  {
+    $( "#sketchSelector" ).dialog( "open" );
+  }
+
+  </script>
+  <div id='ruleDetailContainer' class="col-lg-8 grid-margin">
   </div>
+
 </div>
 <div class="row">
   <div class="col-lg-12 grid-margin stretch-card">
@@ -110,45 +94,125 @@
           <thead>
             <tr>
               <th>
-                #
+                type
               </th>
               <th>
-                대상 노드
+                값1
               </th>
               <th>
-                룰 명
+                값2
               </th>
               <th>
-                룰 설정 상세
+                값3
               </th>
               <th>
                 Update
               </th>
+              <th>
+                수정
+              </th>
+              <th>
+                삭제
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>
-                1
-              </td>
-              <td>
-                Herman Beck
-              </td>
-              <td>
-                <div class="progress">
-                  <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-              </td>
-              <td>
-                $ 77.99
-              </td>
-              <td>
-                May 15, 2015
-              </td>
-            </tr>
+            <script>
+              function ruleDelete(ruleId)
+              {
+                if(confirm('삭제하시겠습니까?'))
+                {
+                  var url = "/detail_rule_delete?key=<%=entity['key']%>&revision=<%=entity['revision']%>&ruleId="+ruleId;
+                  document.location.href = url;
+                }
+              };
+            </script>
+            <% for (var i = 0; i < ruleInstance.length; i++) { %>
+              <tr>
+                <td>
+                  <%=ruleInstance[i]['type']%>
+                </td>
+                <td>
+                  <%=ruleInstance[i]['value']['select1']%>
+                </td>
+                <td>
+                  <%=ruleInstance[i]['value']['select2']%>
+                </td>
+                <td>
+                  <%=ruleInstance[i]['value']['select3']%>
+                </td>
+                <td>
+                  <%=new Date(Number.parseInt(ruleInstance[i]['update'])).toISOString();%>
+                </td>
+                <td>
+                  <a href="javascript:ruleFormLoad('<%=ruleInstance[i]['type']%>', '<%=ruleInstance[i]['ruleId']%>');">
+                    <button type="button" class="btn btn-warning mr-2">수정</button>
+                  </a>
+                </td>
+                <td>
+                  <a href="javascript:ruleDelete('<%=ruleInstance[i]['ruleId']%>');">
+                    <button type="button" class="btn btn-danger mr-2">삭제</button>
+                  </a>
+                </td>
+              </tr>
+            <%}%>
+
           </tbody>
         </table>
       </div>
     </div>
   </div>
+</div>
+
+
+
+
+<div id='sketchSelector' style='overflow: scroll;'>
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">Cloud Json</h4>
+          expand all | close all
+          <div id='editor_holder' class='json-editor'></div>
+
+          <script>
+
+            function convertSelector(cloudJson, cloudJsonSelector)
+            {
+              var name = cloudJson['name'];
+
+
+              if(cloudJson['layers'] != undefined && cloudJson['layers'].length != undefined && cloudJson['layers'].length > 0)
+              {
+                cloudJsonSelector[name] = [];
+                var layers = cloudJson['layers'];
+                for (var i=0;i<layers.length;i++)
+                {
+                  var a = {};
+                  convertSelector(layers[i], a);
+                  cloudJsonSelector[name][i] = a;
+                }
+              }
+              else {
+                cloudJsonSelector[name] = cloudJson['_class'];
+              }
+
+            }
+            var cloudJson = <%-entity['cloudJson']%>;
+            var cloudJsonSelector = {};
+            convertSelector(cloudJson, cloudJsonSelector);
+            var opt = {
+                change: function(data) { /* called on every change */ },
+                propertyclick: function(path) {
+                  if(confirm('선택하시겠습니까?'))
+                  {
+                      $('#sketchSelector').dialog("close");
+                  }
+                }
+            };
+            /* opt.propertyElement = '<textarea>'; */ // element of the property field, <input> is default
+            /* opt.valueElement = '<textarea>'; */  // element of the value field, <input> is default
+            $('#editor_holder').jsonEditor(cloudJsonSelector, opt);
+          </script>
+        </div>
+      </div>
 </div>
