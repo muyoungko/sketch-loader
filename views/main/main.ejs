@@ -35,16 +35,23 @@
           </tr>
         </thead>
         <tbody>
-
           <% for (var i = 0; i < list.length; i++) { %>
 
+            <%
+              var targetComponent = "NOT YET";
+              var entityRule = list[i]['entityRule'];
+              for (var j = 0; j < entityRule.length; j++) {
+                if(entityRule[j]['type'] == 'targetComponent')
+                  targetComponent = entityRule[j]['value']['select1'];
+              }
+            %>
               <tr>
                 <td class="py-1">
                   <img src="../../images/faces-clipart/pic-1.png" alt="image"/>
                 </td>
                 <td>
                   <a href="/detail?key=<%=list[i]['key']%>&revision=<%=list[i]['revision']%>">
-                    Shocking Deal
+                    <%=targetComponent%>
                   </a>
                 </td>
                 <td>

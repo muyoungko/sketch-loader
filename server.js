@@ -71,12 +71,45 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 		console.log('listening on 3000');
 	});
 
-	app.get('/main', (req, res) => {
-			db.collection('entity').find({}).project({key:1, revision: 1, author: 1, update:1}).toArray(function(err, results) {
+	app.get('/blocks', (req, res) => {
+			db.collection('block').find({}).project({}).toArray(function(err, results) {
 				console.log(results);
-				res.render('template.ejs', {body_page:'main/main.ejs', list:results});
+				res.json(results);
+				//res.render('detail/block/selector.ejs', {blocks:results});
 			})
 		});
+
+
+
+
+	app.get('/main', (req, res) => {
+		var revision = '10000';
+		db.collection('entity').aggregate([
+			{ $match: { "revision" : {$eq:revision} }},
+			{
+				 $lookup:
+					 {
+						 from: "entityRule",
+						 localField: "key",
+						 foreignField: "key",
+						 as: "entityRule"
+					 }
+			},
+			{ $project: { key:1, author:1, update:1, revision:1,entityRule:1}},
+		]).map(function(doc){
+			doc['entityRule'] = doc['entityRule'].filter(function(doc2){
+				if(doc2['revision'] == revision){
+					return true;
+				}
+				else{
+					return false;
+				}
+			});
+			return doc;
+		}).toArray(function(err,results){
+			res.render('template.ejs', {body_page:'main/main.ejs', list:results});
+		});
+	});
 
 	app.get('/downloadSketch', (req, res) => {
 			var json = {};
@@ -99,7 +132,7 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 			json['key'] = req.query.key;
 			json['revision'] = req.query.revision;
 
-			db.collection('entity').find(json).project({key:true,revision:true, cloudJson:true}).toArray(function(err, results){
+			db.collection('entity').find(json).project({key:true,revision:true, cloudJson:true, cloudHtml:true}).toArray(function(err, results){
 				if(results.length == 0)
 				{
 					res.send('wrong parameter');
@@ -123,12 +156,10 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 		var type = req.query.type;
 		var ruleId = req.query.ruleId;
 
-		console.log(req.query.ruleId);
 		if(req.query.ruleId != 'null')
 		{
 			json['ruleId'] = req.query.ruleId;
 			db.collection('entityRule').find(json).project({}).toArray(function(err, ruleInstance){
-				console.log(ruleInstance);
 				var rule = getRuleMeta(rules, type);
 				res.render('detail/rule/template.ejs', {rule_body:type+'.ejs'
 					, key:req.query.key, revision:req.query.revision, rule:rule, type:type
@@ -161,19 +192,17 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 				res.send(err);
 				return console.log(err);
 			}
-			res.redirect('/detail?key='+req.query.key+'&revision='+req.query.revision);
 
-			// generateCloudJsonHtml(key, revision, function(success, err){
-			// 		if(success)
-			// 		{
-			// 			//res.redirect('/detail?key='+key);
-			// 			res.send('finished');
-			// 		}
-			// 		else {
-			// 			console.log(err);
-			// 			return res.status(500).send(commandRes);
-			// 		}
-			//	});
+			generateCloudJsonHtml(req.query.key, req.query.revision, function(success, err){
+					if(success)
+					{
+						res.redirect('/detail?key='+req.query.key+'&revision='+req.query.revision);
+					}
+					else {
+						console.log(err);
+						return res.status(500).send(commandRes);
+					}
+				});
 			});
 	});
 	app.get('/saveRule', (req, res) => {
@@ -213,19 +242,17 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 				res.send(err);
 				return console.log(err);
 			}
-			res.redirect('/detail?key='+req.query.key+'&revision='+req.query.revision);
 
-			// generateCloudJsonHtml(key, revision, function(success, err){
-			// 		if(success)
-			// 		{
-			// 			//res.redirect('/detail?key='+key);
-			// 			res.send('finished');
-			// 		}
-			// 		else {
-			// 			console.log(err);
-			// 			return res.status(500).send(commandRes);
-			// 		}
-			//	});
+			generateCloudJsonHtml(req.query.key, req.query.revision, function(success, err){
+					if(success)
+					{
+						res.redirect('/detail?key='+req.query.key+'&revision='+req.query.revision);
+					}
+					else {
+						console.log(err);
+						return res.status(500).send(commandRes);
+					}
+				});
 			});
 	});
 
@@ -349,9 +376,9 @@ function getRuleMeta(rules, type)
 
 function generateCloudJsonHtml(key, revision, func)
 {
-	var command1 = 'java -jar cloudlayoutconverter.jar c "/Users/muyoungko/Documents/sketch-loader/file/'+key+'/'+revision+'" "{\"targetComponent\":\"ProductDeal_Shocking\"}"'
+	var command1 = 'java -jar cloudlayoutconverter.jar c "/Users/muyoungko/Documents/sketch-loader/file/'+key+'/'+revision+'" "{}"'
 	runSingleCommandWithWait(command1, function(couldJsonRes){
-		var command2 = 'java -jar cloudlayoutconverter.jar cw "/Users/muyoungko/Documents/sketch-loader/file/'+key+'/'+revision+'" "{\"targetComponent\":\"ProductDeal_Shocking\"}"'
+		var command2 = 'java -jar cloudlayoutconverter.jar cw "/Users/muyoungko/Documents/sketch-loader/file/'+key+'/'+revision+'" "{}"'
 		runSingleCommandWithWait(command2, function(htmlJsonRes){
 
 			var cloudJson = JSON.parse(couldJsonRes);
@@ -364,6 +391,7 @@ function generateCloudJsonHtml(key, revision, func)
 				'author':'muyoungko',
 				'update': String(Date.now())
 			};
+			console.log(couldJsonRes);
 			newvalue['cloudJson'] = couldJsonRes;
 			newvalue['cloudHtml'] = htmlJsonRes;
 			db.collection('entity').update(json, { $set: newvalue }, { upsert: true }, (err, result) => {

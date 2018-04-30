@@ -21,7 +21,17 @@
 
 </div>
 
-
+<%
+  var targetComponentRuleId = null;
+  for(var i=0;i<ruleInstance.length;i++)
+  {
+    if('targetComponent' == ruleInstance[i]['type'])
+    {
+      targetComponentRuleId = ruleInstance[i]['ruleId'];
+      break;
+    }
+  }
+%>
 
 <div class="row">
   <div class="col-lg-4 grid-margin">
@@ -31,7 +41,12 @@
         <div class="icons-list row">
           <% for (var i = 0; i < rules.length; i++) { %>
             <div class="col-sm-8 col-md-4 col-lg-4">
-              <a href="javascript:ruleFormLoad('<%=rules[i]['type']%>', null);">
+              <%if(rules[i]['type'] == 'targetComponent' && targetComponentRuleId != null){%>
+                <a href="javascript:ruleFormLoad('<%=rules[i]['type']%>', '<%=targetComponentRuleId%>');">
+              <%}else{%>
+                <a href="javascript:ruleFormLoad('<%=rules[i]['type']%>', null);">
+              <%}%>
+
                 <i class="fa <%=rules[i]['icon']%>"></i><%=rules[i]['name']%>
               </a>
             </div>
@@ -50,17 +65,7 @@
       $('#ruleDetailContainer' ).html( res );
     });
   };
-  <%
-    var targetComponentRuleId = null;
-    for(var i=0;i<ruleInstance.length;i++)
-    {
-      if('targetComponent' == ruleInstance[i]['type'])
-      {
-        targetComponentRuleId = ruleInstance[i]['ruleId'];
-        break;
-      }
-    }
-  %>
+
   $(function(){
     ruleFormLoad('targetComponent', <%-targetComponentRuleId!=null? "'"+targetComponentRuleId+"'":"null"%>);
 
@@ -70,11 +75,79 @@
       height: 500,
       title: 'sketch 노드 선택',
     });
+
+    $( "#blockSelector" ).dialog({
+      autoOpen: false,
+      width: 600,
+      height: 500,
+      title: '블록 선택',
+    });
   });
 
+  var gcallbackInputId = '';
   function pickSketch(callbackInputId)
   {
+    gcallbackInputId = callbackInputId;
     $( "#sketchSelector" ).dialog( "open" );
+  }
+
+  function convertBlockJson(srcJson, outJson)
+  {
+    var name = srcJson['name'];
+    if(name == undefined)
+      name = srcJson['type'];
+    console.log('name = ' + name);
+    if(srcJson['blocks'] != undefined && srcJson['blocks'].length != undefined && srcJson['blocks'].length > 0)
+    {
+      outJson[name] = [];
+      var layers = srcJson['blocks'];
+      for (var i=0;i<layers.length;i++)
+      {
+        var a = {};
+        convertBlockJson(layers[i], a);
+        outJson[name][i] = a;
+      }
+    }
+    else {
+      outJson[name] = srcJson['type'];
+    }
+
+  }
+  function pickBlock(callbackInputId)
+  {
+    gcallbackInputId = callbackInputId;
+
+    $.ajax({
+      url: "/blocks"
+    }).done(function(res) {
+      var opt = {
+          change: function(data) { /* called on every change */ },
+          propertyclick: function(path) {
+            if(confirm('선택하시겠습니까?'))
+            {
+                $('#blockSelector').dialog("close");
+
+                console.log(Object.prototype.toString.call(path));
+                console.log(path);
+                var res = path.split("][");
+                vv = res[res.length-1];
+                vv = vv.split("]")[0];
+                vv = vv.replace(/'/g , "");
+                vv = vv.replace('[' , "");
+                $('#'+gcallbackInputId).val(vv);
+            }
+          },
+          sketchMode : true
+      };
+      var out = [];
+      for(var i=0;i<res.length;i++){
+        out[i] = {};
+        convertBlockJson(res[i], out[i]);
+      }
+      console.log(out);
+      $('#block_holder').jsonEditor(out, opt);
+      $("#blockSelector").dialog( "open" );
+    });
   }
 
   </script>
@@ -179,8 +252,6 @@
             function convertSelector(cloudJson, cloudJsonSelector)
             {
               var name = cloudJson['name'];
-
-
               if(cloudJson['layers'] != undefined && cloudJson['layers'].length != undefined && cloudJson['layers'].length > 0)
               {
                 cloudJsonSelector[name] = [];
@@ -206,12 +277,40 @@
                   if(confirm('선택하시겠습니까?'))
                   {
                       $('#sketchSelector').dialog("close");
+
+                      console.log(Object.prototype.toString.call(path));
+                      console.log(path);
+                      var res = path.split("][");
+                      vv = res[res.length-1];
+                      vv = vv.split("]")[0];
+                      vv = vv.replace(/'/g , "");
+                      vv = vv.replace('[' , "");
+                      $('#'+gcallbackInputId).val(vv);
                   }
-                }
+                },
+                sketchMode : true
             };
             /* opt.propertyElement = '<textarea>'; */ // element of the property field, <input> is default
             /* opt.valueElement = '<textarea>'; */  // element of the value field, <input> is default
             $('#editor_holder').jsonEditor(cloudJsonSelector, opt);
+          </script>
+        </div>
+      </div>
+</div>
+
+
+
+<div id='blockSelector' style='overflow: scroll;'>
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">Cloud Json</h4>
+          expand all | close all
+          <div id='block_holder' class='json-editor'></div>
+
+          <script>
+
+            /* opt.propertyElement = '<textarea>'; */ // element of the property field, <input> is default
+            /* opt.valueElement = '<textarea>'; */  // element of the value field, <input> is default
           </script>
         </div>
       </div>

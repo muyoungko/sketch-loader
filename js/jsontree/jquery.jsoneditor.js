@@ -30,19 +30,20 @@
         var onpropertyclick = options.propertyclick || K;
 
         return this.each(function() {
-            JSONEditor($(this), json, onchange, onpropertyclick, options.propertyElement, options.valueElement);
+            JSONEditor($(this), json, onchange, onpropertyclick, options.propertyElement, options.valueElement, options.sketchMode);
         });
 
     };
 
-    function JSONEditor(target, json, onchange, onpropertyclick, propertyElement, valueElement) {
+    function JSONEditor(target, json, onchange, onpropertyclick, propertyElement, valueElement, sketchMode) {
         var opt = {
             target: target,
             onchange: onchange,
             onpropertyclick: onpropertyclick,
             original: json,
             propertyElement: propertyElement,
-            valueElement: valueElement
+            valueElement: valueElement,
+            sketchMode: sketchMode
         };
         construct(opt, json, opt.target);
         $(opt.target).on('blur focus', '.property, .value', function() {
@@ -200,7 +201,7 @@
         for (var key in json) {
             if (!json.hasOwnProperty(key)) continue;
 
-            var item     = $('<div>',   { 'class': 'item', 'data-path': path }),
+            var item     = $('<div>',   { 'class': 'item expanded', 'data-path': path}),
                 property =   $(opt.propertyElement || '<input>', { 'class': 'property' , 'readonly':''}),
                 value    =   $(opt.valueElement || '<input>', { 'class': 'value' , 'readonly':''   });
 
@@ -211,14 +212,37 @@
                 item.append(property);
             }
             else {
+              if(opt.sketchMode){
+                item.append(property);
+              }
+              else {
                 item.append(property).append(value);
+              }
             }
 
             property.val(key).attr('title', key);
             var val = stringify(json[key]);
             value.val(val).attr('title', val);
 
-            assignType(item, json[key]);
+            if(opt.sketchMode)
+            {
+              item.removeClass(types);
+              property.removeClass('selectable');
+              var className = 'object';
+              //'object array boolean number string null';
+              if(val == 'image')
+                className = 'number';
+              else if(val == '\"text\"')
+              {
+                className = 'string';
+                //property.addClass('selectable');
+              }
+              item.addClass(className);
+            }
+            else
+            {
+              assignType(item, json[key]);
+            }
 
             property.change(propertyChanged(opt));
             value.change(valueChanged(opt));
@@ -228,13 +252,18 @@
                 construct(opt, json[key], item, (path ? path + '.' : '') + key);
             }
 
-            if(key=='0sdfsdf')
+            if(opt.sketchMode)
             {
-              console.log(item.children().eq(2).children());
-              root.append(item.children().eq(2).children());
+
+              if(!isNaN(key))
+              {
+                root.append(item.children().eq(2));
+              }
+              else {
+                root.append(item);
+              }
             }
-            else
-            {
+            else {
               root.append(item);
             }
         }

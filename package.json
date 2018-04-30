@@ -5,6 +5,7 @@
   "main": "index.html",
   "dependencies": {
     "JSON": "^1.0.0",
+    "ajax-request": "^1.2.3",
     "bootstrap": "4.0.0",
     "chart.js": "2.7.1",
     "cookie-parser": "^1.4.3",

@@ -21,7 +21,7 @@
 
 }
 .json-editor .property {
-  width: 254px;
+  width: 454px;
   background-color: #B1C639;
   color: white;
   font-weight: bold;
@@ -33,6 +33,10 @@
 }
 
 .json-editor .editing {
+  outline: none;
+}
+
+.json-editor .selectable {
   border: 4px solid red;
   outline: none;
 }
