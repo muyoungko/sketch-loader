@@ -158,6 +158,7 @@
                 property =   $(opt.propertyElement || '<input>', { 'class': 'property' , 'readonly':''}),
                 value    =   $(opt.valueElement || '<input>', { 'class': 'value' , 'readonly':''   });
 
+
             if (isObject(json[key]) || isArray(json[key])) {
                 addExpander(item);
                 item.append(property);

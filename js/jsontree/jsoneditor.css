@@ -18,7 +18,8 @@
 }
 
 .json-editor .value {
-
+  width: 454px;
+  font-size: 17px;
 }
 .json-editor .property {
   width: 454px;
@@ -26,8 +27,9 @@
   color: white;
   font-weight: bold;
   text-shadow: 1px 1px 1px black;
-
+  font-size: 17px;
 }
+
 .json-editor button.property {
   width: 160px;
 }
