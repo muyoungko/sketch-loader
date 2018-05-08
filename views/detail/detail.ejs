@@ -3,7 +3,7 @@
 <script src="js/jsontree/jquery.jsoneditor.js"></script>
 
 <div class="row">
-  <div class="col-lg-4 grid-margin">
+  <div class="col-lg-6 grid-margin">
     <div class="card">
       <div class="card-body">
         <h4 class="card-title">
@@ -14,8 +14,10 @@
           <a href="javascript:previewNext();">
             다음>>
           </a>
+
         </h4>
-        <div style='position:relative;height:280px;width:280px;outline: 1px dashed red;'>
+        <div id="preview_container" style='position:relative;flex-wrap:wrap;outline: 1px dashed red;'>
+
           <script>
           var data_index = 20000;
           function previewPrev()
@@ -38,16 +40,14 @@
             preview(0);
           });
           </script>
-          <div id="preview_container">
 
-          </div>
         </div>
       </div>
     </div>
   </div>
 
 
-  <div class="col-lg-8 grid-margin stretch-card">
+  <div class="col-lg-6 grid-margin stretch-card">
     <div class="card">
       <div class="card-body">
         <h4 class="card-title">룰 인스턴스</h4>
@@ -91,7 +91,18 @@
             <% for (var i = 0; i < ruleInstance.length; i++) { %>
               <tr>
                 <td>
-                  <%=ruleInstance[i]['type']%>
+                  <%
+                    var icon = null;
+                    for(var j=0;j<rules.length;j++)
+                    {
+                      if(rules[j]['type'] == ruleInstance[i]['type'])
+                      {
+                        icon = rules[j]['icon'];
+                        break;
+                      }
+                    }
+                  %>
+                  <i class="fa <%=icon%>"/>
                 </td>
                 <td>
                   <%=ruleInstance[i]['value']['select1']%>

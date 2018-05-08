@@ -9,7 +9,8 @@ const JSON = require('JSON');
 const mv = require('mv');
 const rmdirSync = require('rmdir-sync');
 const cmd     = require('node-command-line');
-
+const request = require('request');
+const { exec } = require('child_process');
 
 Promise = require('bluebird');
 
@@ -79,37 +80,140 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 		console.log('listening on 3000');
 	});
 
+
+	app.get('/main', (req, res) => {
+			res.render('template.ejs', {body_page:'main/main.ejs', list:'1'});
+	});
+
+	app.get('/show', (req, res) => {
+		var url = 'http://m.11st.co.kr/MW/CMS/PageDataAjax.tmall?pageId=MOHOMEDEAL';
+		convertPuiToPlat(url, function(success, list){
+			var findJson = [];
+			var map = {};
+			for(var i=0;i<list.length;i++)
+			{
+				var type = list[i]['groupName'];
+				if(map[type] == undefined)
+				{
+					findJson[findJson.length] = {type:type};
+					map[type] = '1';
+				}
+			}
+
+			//console.log('findJson = ' + JSON.stringify(findJson));
+			//var findJsonEntityRule = {type:'targetComponent'};
+			//TODO 대상만 조회
+			var findJsonEntityRule = {type:'targetComponent'};
+			db.collection('entityRule').find(findJsonEntityRule).project({key:true,revision:true,value:true, type:true}).toArray((err, targetRuleInstance) => {
+
+
+				var entityFindJson = [];
+				var blockByKeyrevision = {};
+				for(var i=0;i<targetRuleInstance.length;i++)
+				{
+					var rule = targetRuleInstance[i];
+					var targetDataBlock = rule['value']['select2'];
+					entityFindJson[entityFindJson.length] = {key:rule['key'], revision:rule['revision']};
+					var keyrevision = rule['key']+ rule['revision'];
+					blockByKeyrevision[keyrevision] = targetDataBlock;
+				}
+
+				db.collection('entityRule').find({$or: entityFindJson}).project({key:true,revision:true,value:true, type:true}).toArray((err, ruleInstance) => {
+					db.collection('entity').find({$or: entityFindJson}).project({key:true,revision:true,cloudHtml:true}).toArray((err, entityList) => {
+						//console.log(ruleInstance);
+
+						var ruleInstanceByBlock = {};
+						for(var i=0;i<ruleInstance.length;i++)
+						{
+								var rule = ruleInstance[i];
+								var keyrevision = rule['key']+ rule['revision'];
+								var block = blockByKeyrevision[keyrevision];
+
+								if(ruleInstanceByBlock[block] == undefined)
+									ruleInstanceByBlock[block] = [];
+								var ruleInstanceByBlockList = ruleInstanceByBlock[block];
+								ruleInstanceByBlockList[ruleInstanceByBlockList.length] = rule;
+						}
+
+						var cloudHtmlByBlock = {};
+						for(var i=0;i<entityList.length;i++)
+						{
+								var entity = entityList[i];
+								var keyrevision = entity['key']+ entity['revision'];
+								var block = blockByKeyrevision[keyrevision];
+								cloudHtmlByBlock[block] = entity['cloudHtml'];
+								console.log('cloudHtmlByBlock add  = ' + block);
+								// console.log(entity['cloudHtml']);
+						}
+
+						// console.log('cloudHtmlByBlock.length = ' + cloudHtmlByBlock.length);
+						console.log('ruleInstanceByBlock = ' + JSON.stringify(ruleInstanceByBlock));
+
+						var returnHtml = '';
+						for(var i=0;i<list.length;i++)
+						{
+							var item = list[i];
+							var block = item['groupName'];
+							if(cloudHtmlByBlock[block] != null)
+							{
+								var div = '<li style="margin: 0 0 10px 0;">\n';
+								returnHtml = returnHtml +'\n'
+									+ div +'\n'
+									+ wrapCloudHtml(cloudHtmlByBlock[block], ruleInstanceByBlock[block], item);
+									+'\n</li>';
+							}
+							else
+							{
+
+								returnHtml = returnHtml + '<li style="margin: 0 0 10px 0;"><div style="background-color: coral;vertical-align: middle;text-align: center;top:0px;left:0px;width:360px;position:relative;height:100px;outline: 1px dashed red;">'
+											+'<span style="vertical-align:middle;height:100px;display: inline-block;line-height: normal;">아직 스캐치가 없는 블록 - '+block+'</span></div></li>';
+							}
+						}
+						// console.log(returnHtml);
+						res.render('template.ejs', {body_page:'show/show.ejs', list:'1', returnHtml:returnHtml});
+					});
+				});
+			});
+		});
+		// example
+		// const query1 = MyModel.find({ name: /john/i }, null, { skip: 10 });
+		// const result1 = await query1.exec();
+		// const query2 = MyModel.find({ name: /john/i }, null, { skip: 100 });
+		// const result2 = await query2.exec();
+
+	});
+
 	app.get('/blocks', (req, res) => {
 			db.collection('block').find({}).project({}).toArray(function(err, results) {
 				console.log(results);
 				res.json(results);
 				//res.render('detail/block/selector.ejs', {blocks:results});
 			})
-		});
+	});
 
-		app.get('/sampleData', (req, res) => {
-			var json = {};
-			json['key'] = req.query.key;
-			json['revision'] = req.query.revision;
-			var index = req.query.index;
-			if(index == undefined)
-				index = 0;
-			db.collection('entityRule').find(json).project({}).toArray(function(err, results){
-				var l = results.filter(function(obj){
-					return obj['type']=='targetComponent';
-				});
-
-				var json2 = {type:l[0]['value']['select2']};
-				db.collection('blockSample').find(json2).project({}).toArray(function(err2, results2) {
-					var sampleLength = results2[0]['sampleData'].length;
-					console.log(results2[0]['sampleData'][index%sampleLength]);
-					res.json(results2[0]['sampleData'][index%sampleLength]);
-				})
+	app.get('/sampleData', (req, res) => {
+		var json = {};
+		json['key'] = req.query.key;
+		json['revision'] = req.query.revision;
+		var index = req.query.index;
+		if(index == undefined)
+			index = 0;
+		db.collection('entityRule').find(json).project({}).toArray(function(err, results){
+			var l = results.filter(function(obj){
+				return obj['type']=='targetComponent';
 			});
+
+			var json2 = {type:l[0]['value']['select2']};
+			db.collection('blockSample').find(json2).project({}).toArray(function(err2, results2) {
+				var sampleLength = results2[0]['sampleData'].length;
+				console.log(results2[0]['sampleData'][index%sampleLength]);
+				res.json(results2[0]['sampleData'][index%sampleLength]);
+			})
 		});
+	});
 
 
-	app.get('/main', (req, res) => {
+	app.get('/my', (req, res) => {
 		var revision = '10000';
 		db.collection('entity').aggregate([
 			{ $match: { "revision" : {$eq:revision} }},
@@ -134,7 +238,7 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 			});
 			return doc;
 		}).toArray(function(err,results){
-			res.render('template.ejs', {body_page:'main/main.ejs', list:results});
+			res.render('template.ejs', {body_page:'my/my.ejs', list:results});
 		});
 	});
 
@@ -292,50 +396,16 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 			index = 0;
 		db.collection('entity').find(json).project({key:true,revision:true,cloudHtml:true}).toArray(function(err, results){
 			db.collection('entityRule').find(json).project({type:1,value:1}).toArray(function(err, ruleInstance){
-				var targetBlock = null;
-				for(var i=0;i<ruleInstance.length;i++)
-				{
-					var type = ruleInstance[i]['type'];
-					if(type == 'targetComponent')
-					{
-						targetBlock = ruleInstance[i]['value']['select2'];
-						break;
-					}
-				}
-				//console.log('targetBlock = ' +  targetBlock);
-				if(!isEmpty(targetBlock) && !isEmpty(index))
-				{
-					var blockSampleJson = {type:targetBlock};
-					db.collection('blockSample').find(blockSampleJson).project({}).toArray(function(err, blockSample){
-						var sampleLength = blockSample[0]['sampleData'].length;
-						var sampleDataJson = blockSample[0]['sampleData'][index%sampleLength];
-
-						var cloudHtml = results[0]['cloudHtml'];
-
-						for(var i=0;i<ruleInstance.length;i++)
-						{
-							var type = ruleInstance[i]['type'];
-							var select1 = ruleInstance[i]['value']['select1'];
-							var select2 = ruleInstance[i]['value']['select2'];
-							var select3 = ruleInstance[i]['value']['select3'];
-							var select4 = ruleInstance[i]['value']['select4'];
-							var select5 = ruleInstance[i]['value']['select5'];
-							if(type == 'mappingText')
-							{
-								cloudHtml = cloudHtml.replace('{{'+select2+'}}', sampleDataJson[select2]);
-							}else if(type == 'mappingImage'){
-								cloudHtml = cloudHtml.replace('{{'+select2+'}}', sampleDataJson[select2]);
-							}else if(type == 'mappingClick'){
-								cloudHtml = cloudHtml.replace('{{'+select2+'}}', sampleDataJson[select2]);
-							}
-						}
-						console.log(sampleDataJson);
-						res.render('detail/detail_preview.ejs', {cloudHtml:cloudHtml});
-					});
-				}
-				else {
-					res.render('detail/detail_preview.ejs', {cloudHtml:results[0]['cloudHtml']});
-				}
+				var targetBlock = getTargetFromRuleInstance(ruleInstance);
+				var blockSampleJson = {type:targetBlock};
+				db.collection('blockSample').find(blockSampleJson).project({}).toArray(function(err, blockSample){
+					var cloudHtml = results[0]['cloudHtml'];
+					var sampleLength = blockSample[0]['sampleData'].length;
+					var sampleDataJson = blockSample[0]['sampleData'][index%sampleLength];
+					//console.log(ruleInstance);
+					var wrapedCloudHtml = wrapCloudHtml(cloudHtml, ruleInstance, sampleDataJson);
+					res.render('detail/detail_preview.ejs', {cloudHtml:wrapedCloudHtml});
+				});
 			});
 
 		});
@@ -459,7 +529,16 @@ function getRuleMeta(rules, type)
 	return null;
 }
 
-
+function convertPuiToPlat(url, func)
+{
+	var command1 = 'java -jar cloudlayoutconverter.jar puiconvert "'+url+'"';
+	runSingleCommandWithWait(command1, function(res){
+		console.log(res);
+		func(true, JSON.parse(res));
+	}, function(res){
+		func(false, res);
+	});
+}
 function generateCloudJsonHtml(key, revision, func)
 {
 
@@ -530,17 +609,55 @@ function isEmpty(str)
 
 //java -jar cloudlayoutconverter.jar c '/Users/muyoungko/Documents/sketch-loader/file/2D3DE24E-692C-4F98-B0A9-FEF2B759B513/10000' '{\"targetComponent\":\"ProductDeal_Shocking\"}
 function runSingleCommandWithWait(command, success, failed) {
-	Promise.coroutine(function *() {
-		var response = yield cmd.run(command);
-		if(response.success) {
-			success(response.message);
-			 // do something
-			 // if success get stdout info in message. like response.message
-		} else {
-			failed(response.message);
-			// do something
-			// if not success get error message and stdErr info as error and stdErr.
-			//like response.error and response.stdErr
+	exec(command, {maxBuffer: 1024 * 500}, function(error, stdout, stderr){
+		success(stdout)
+	});
+	// Promise.coroutine(function *() {
+	// 	var response = yield cmd.run(command);
+	// 	if(response.success) {
+	// 		success(response.message);
+	// 		 // do something
+	// 		 // if success get stdout info in message. like response.message
+	// 	} else {
+	// 		failed(response.message);
+	// 		// do something
+	// 		// if not success get error message and stdErr info as error and stdErr.
+	// 		//like response.error and response.stdErr
+	// 	}
+	// })();
+}
+
+function getTargetFromRuleInstance(ruleInstance)
+{
+	var targetBlock = null;
+	for(var i=0;i<ruleInstance.length;i++)
+	{
+		var type = ruleInstance[i]['type'];
+		if(type == 'targetComponent')
+		{
+			targetBlock = ruleInstance[i]['value']['select2'];
+			break;
 		}
-	})();
+	}
+	return targetBlock;
+}
+function wrapCloudHtml(cloudHtml, ruleInstance, sampleDataJson){
+	var wrapedCloudHtml = cloudHtml;
+	for(var i=0;i<ruleInstance.length;i++)
+	{
+		var type = ruleInstance[i]['type'];
+		var select1 = ruleInstance[i]['value']['select1'];
+		var select2 = ruleInstance[i]['value']['select2'];
+		var select3 = ruleInstance[i]['value']['select3'];
+		var select4 = ruleInstance[i]['value']['select4'];
+		var select5 = ruleInstance[i]['value']['select5'];
+		if(type == 'mappingText'){
+			wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', sampleDataJson[select2]);
+		}else if(type == 'mappingImage'){
+			wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', sampleDataJson[select2]);
+		}else if(type == 'mappingClick'){
+			wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', sampleDataJson[select2]);
+		}
+	}
+	return wrapedCloudHtml;
 }
