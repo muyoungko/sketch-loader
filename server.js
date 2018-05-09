@@ -184,11 +184,12 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 	});
 
 	app.get('/blocks', (req, res) => {
-			db.collection('block').find({}).project({}).toArray(function(err, results) {
-				console.log(results);
-				res.json(results);
-				//res.render('detail/block/selector.ejs', {blocks:results});
-			})
+		console.log("/blocks");
+		db.collection('block').find({}).project({}).toArray(function(err, results) {
+			console.log(results);
+			res.json(results);
+			//res.render('detail/block/selector.ejs', {blocks:results});
+		})
 	});
 
 	app.get('/sampleData', (req, res) => {

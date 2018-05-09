@@ -1,1 +1,1 @@
-./node_modules/.bin/nodemon --ignore file server.js
+./node_modules/.bin/nodemon --ignore cl server.js

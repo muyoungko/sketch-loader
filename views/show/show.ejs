@@ -1,18 +1,113 @@
-<div class="col-lg-6 grid-margin stretch-card">
-  <div class="card">
-    <div class="card-body">
-      <h4 class="card-title">홈탭</h4>
-      <p class="card-description">
-        <div class="input-group col-xs-12">
-          <input name="api" id="select2" value="http://m.11st.co.kr/home.js" type="text" class="form-control" placeholder="">
-          <span class="input-group-append">
-            <button id="apiButton" onclick="" class="file-upload-browse btn btn-info" type="button">PUI API - 조회</button>
-          </span>
-        </div>
-      </p>
-      <ul style="list-style-type: none;">
-        <%-returnHtml%>
-      </ul>
+<style type="text/css">
+.layer_fixed
+{
+    height:500px;
+    width:450px;
+    position:fixed;
+    z-index:999;
+    top:100px;
+    right:50px;
+    background-color:#fff;
+}
+</style>
+
+<div id="block_info" class ="layer_fixed">
+  <div class="col-lg-12 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">블록 정보</h4>
+
+          <div class="form-group row">
+            <label for="exampleInputEmail2" class="col-sm-3 col-form-label">블록명</label>
+            <div class="col-sm-9">
+              <label for="exampleInputPassword2" class="col-sm-9 col-form-label">ShockingDeal_Product</label>
+            </div>
+
+            <label for="exampleInputEmail2" class="col-sm-3 col-form-label">Revision</label>
+            <div class="col-sm-9">
+              <label for="exampleInputPassword2" class="col-sm-9 col-form-label">4</label>
+            </div>
+
+            <label for="exampleInputPassword2" class="col-sm-3 col-form-label">PUI Json</label>
+            <div class="col-sm-9">
+              <button type="submit" class="btn btn-primary btn-fw">조회</button>
+            </div>
+
+            <label class="col-sm-3 col-form-label">블록수정</label>
+            <div class="col-sm-9">
+              <button type="submit" class="btn btn-secondary btn-fw">블록상세>></button>
+            </div>
+
+            <label class="col-sm-3 col-form-label">효율기준</label>
+            <div class="col-sm-9">
+              <div class="template-demo">
+                <div class="btn-group" role="group" aria-label="Basic example">
+                  <button type="button" class="btn btn-outline-secondary">이상품만</button>
+                  <button type="button" class="btn btn-outline-secondary">이위치만</button>
+                  <button type="button" class="btn btn-outline-secondary">모두</button>
+                </div>
+              </div>
+            </div>
+
+            <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>지난Revision개선</th>
+                        <th>노출</th>
+                        <th>클릭</th>
+                        <th>CTR</th>
+                        <th>구매전환</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="text-success"> 4</td>
+                        <td class="text-danger"> 35.00% <i class="mdi mdi-arrow-down"></i></td>
+                        <td class="text-danger"> 21.06% <i class="mdi mdi-arrow-down"></i></td>
+                        <td class="text-danger"> 28.76% <i class="mdi mdi-arrow-down"></i></td>
+                        <td class="text-success"> 98.05% <i class="mdi mdi-arrow-up"></i></td>
+                      </tr>
+                      <tr>
+                        <td class="text-success"> 3</td>
+                        <td class="text-danger"> 15.00% <i class="mdi mdi-arrow-down"></i></td>
+                        <td class="text-danger"> 21.06% <i class="mdi mdi-arrow-down"></i></td>
+                        <td class="text-danger"> 28.76% <i class="mdi mdi-arrow-down"></i></td>
+                        <td class="text-success"> 98.05% <i class="mdi mdi-arrow-up"></i></td>
+                      </tr>
+                      <tr>
+                        <td class="text-success"> 2</td>
+                        <td class="text-danger"> 35.00% <i class="mdi mdi-arrow-down"></i></td>
+                        <td class="text-danger"> 21.06% <i class="mdi mdi-arrow-down"></i></td>
+                        <td class="text-danger"> 28.76% <i class="mdi mdi-arrow-down"></i></td>
+                        <td class="text-success"> 98.05% <i class="mdi mdi-arrow-up"></i></td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-6 grid-margin stretch-card">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">홈탭</h4>
+        <p class="card-description">
+          <div class="input-group col-xs-12">
+            <input name="api" id="select2" value="http://m.11st.co.kr/home.js" type="text" class="form-control" placeholder="">
+            <span class="input-group-append">
+              <button id="apiButton" onclick="" class="file-upload-browse btn btn-info" type="button">PUI API - 조회</button>
+            </span>
+          </div>
+        </p>
+        <ul style="list-style-type: none; width:360px">
+          <%-returnHtml%>
+        </ul>
+      </div>
     </div>
   </div>
 </div>
