@@ -82,7 +82,32 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 
 
 	app.get('/main', (req, res) => {
-			res.render('template.ejs', {body_page:'main/main.ejs', list:'1'});
+		var revision = '10000';
+		db.collection('entity').aggregate([
+			{ $match: { "revision" : {$eq:revision} }},
+			{
+				 $lookup:
+					 {
+						 from: "entityRule",
+						 localField: "key",
+						 foreignField: "key",
+						 as: "entityRule"
+					 }
+			},
+			{ $project: { key:1, author:1, update:1, revision:1,entityRule:1}},
+		]).map(function(doc){
+			doc['entityRule'] = doc['entityRule'].filter(function(doc2){
+				if(doc2['revision'] == revision){
+					return true;
+				}
+				else{
+					return false;
+				}
+			});
+			return doc;
+		}).toArray(function(err,results){
+			res.render('template.ejs', {body_page:'main/main.ejs', list:results});
+		});
 	});
 
 	app.get('/show', (req, res) => {

@@ -1,10 +1,12 @@
+
+
 <div class="col-lg-12 grid-margin stretch-card">
   <div class="card">
     <div class="card-body">
       <h4 class="card-title">나의 스캐치</h4>
-      <p class="card-description">
-        내가 관리하는 스케치<code></code>
-      </p>
+
+      <button style="float: right;" type="button" class="btn btn-danger btn-rounded btn-fw">New+</button>
+
       <table class="table table-striped">
         <thead>
           <tr>
@@ -30,7 +32,7 @@
               Update
             </th>
             <th>
-              Detail
+              편집
             </th>
           </tr>
         </thead>
@@ -73,7 +75,7 @@
                 </td>
                 <td>
                   <a href="/detail?key=<%=list[i]['key']%>&revision=<%=list[i]['revision']%>">
-                  >>
+                  <button type="submit" class="btn btn-secondary btn-fw">블록상세>></button>
                   </a>
                 </td>
 

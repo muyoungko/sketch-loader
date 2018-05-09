@@ -3,8 +3,8 @@
 <script src="js/jsontree/jquery.jsoneditor.js"></script>
 
 <div class="row">
-  <div class="col-lg-6 grid-margin">
-    <div class="card">
+  <div class="col-lg-6 grid-margin" >
+    <div class="card" style="flex-wrap: wrap;display:inline-block;">
       <div class="card-body">
         <h4 class="card-title">
           <a href="javascript:previewPrev();">
@@ -16,7 +16,19 @@
           </a>
 
         </h4>
-        <div id="preview_container" style='position:relative;flex-wrap:wrap;outline: 1px dashed red;'>
+
+        <style type="text/css">
+          .clpreview {
+            display: -webkit-flex; /* Safari */
+            -webkit-flex-wrap: wrap; /* Safari 6.1+ */
+            display:inline-block;
+            flex-wrap: wrap;
+            position:relative;
+            outline: 1px dashed red;
+          }
+        </style>
+
+        <div class="clpreview" id="preview_container">
 
           <script>
           var data_index = 20000;
@@ -34,6 +46,7 @@
               url: "/detail_preview?key=<%=entity['key']%>&revision=<%=entity['revision']%>&data_index="+ data_index
             }).done(function(res) {
               $('#preview_container' ).html( res );
+              initcl();
             });
           };
           $(function(){
@@ -47,7 +60,7 @@
   </div>
 
 
-  <div class="col-lg-6 grid-margin stretch-card">
+  <div class="col-lg-6 grid-margin stretch-card" style="flex-grow: 100;width:500px;">
     <div class="card">
       <div class="card-body">
         <h4 class="card-title">룰 인스턴스</h4>
@@ -149,7 +162,7 @@
   <div class="col-lg-4 grid-margin">
     <div class="card">
       <div class="card-body">
-        <h4 class="card-title">룰 판넬</h4>
+        <h4 class="card-title">룰 추가</h4>
         <div class="icons-list row">
           <% for (var i = 0; i < rules.length; i++) { %>
             <div class="col-sm-8 col-md-4 col-lg-4">
