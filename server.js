@@ -312,15 +312,35 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 		var json = {};
 		var type = req.query.type;
 		var ruleId = req.query.ruleId;
-
-		if(req.query.ruleId != 'null')
+		//유니크 룰일 경우 단일 인스턴스를 찾는다.
+		if(isUniqueRule(rules, req.query.type))
+		{
+			db.collection('entityRule').find(json).project({}).toArray(function(err, ruleInstance){
+				var rule = getRuleMeta(rules, type);
+				var theRuleInstance = null;
+				for(var i=0;i<ruleInstance.length;i++)
+				{
+					if(ruleInstance[i]['type'] == req.query.type)
+					{
+						theRuleInstance = ruleInstance[i];
+						ruleId = ruleInstance[i]['ruleId']
+						break;
+					}
+				}
+				res.render('detail/rule/template.ejs', {rule_body:type+'.ejs'
+					, key:req.query.key, revision:req.query.revision, rule:rule, type:type
+					, ruleId:ruleId, ruleInstance:theRuleInstance, rules:rules
+				});
+			});
+		}
+		else if(req.query.ruleId != 'null')
 		{
 			json['ruleId'] = req.query.ruleId;
 			db.collection('entityRule').find(json).project({}).toArray(function(err, ruleInstance){
 				var rule = getRuleMeta(rules, type);
 				res.render('detail/rule/template.ejs', {rule_body:type+'.ejs'
 					, key:req.query.key, revision:req.query.revision, rule:rule, type:type
-					, ruleId:ruleId, ruleInstance:ruleInstance[0]
+					, ruleId:ruleId, ruleInstance:ruleInstance[0], rules:rules
 				});
 			});
 		}
@@ -328,7 +348,7 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 			var rule = getRuleMeta(rules, type);
 			res.render('detail/rule/template.ejs', {rule_body:type+'.ejs'
 				, key:req.query.key, revision:req.query.revision, rule:rule, type:type
-				, ruleId:ruleId, ruleInstance:{}
+				, ruleId:ruleId, ruleInstance:{}, rules:rules
 			});
 		}
 

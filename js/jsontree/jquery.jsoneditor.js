@@ -155,8 +155,8 @@
             if (!json.hasOwnProperty(key)) continue;
 
             var item     = $('<div>',   { 'class': 'item', 'data-path': path }),
-                property =   $(opt.propertyElement || '<input>', { 'class': 'property' , 'readonly':''}),
-                value    =   $(opt.valueElement || '<input>', { 'class': 'value' , 'readonly':''   });
+                property =   $(opt.propertyElement || '<div>', { 'class': 'property' , 'readonly':''}),
+                value    =   $(opt.valueElement || '<div>', { 'class': 'value' , 'readonly':''   });
 
 
             if (isObject(json[key]) || isArray(json[key])) {

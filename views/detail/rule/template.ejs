@@ -1,7 +1,26 @@
 
   <div class="card">
     <div class="card-body">
-      <h4 class="card-title">룰 상세 설정 - <%=rule['name']%></h4>
+      <p class="card-description">
+        <div class="btn-group" role="group" aria-label="Basic example">
+          <%for(var i=0;i<rules.length;i++){
+              var bg = 'btn-outline-secondary';
+              if(rules[i]['type'] == rule['type'])
+                bg = 'btn-success';
+              %>
+
+              <a href="javascript:ruleFormLoad('<%=rules[i]['type']%>', null);">
+                <button type="button" class="btn <%=bg%> icon-btn" title='<%=rules[i]['name']%>'>
+                  <i class="fa <%=rules[i]['icon']%>"></i>
+                </button>
+              </a>
+
+          <%}%>
+        </div>
+
+      </p>
+      <h4 class="card-title">
+        룰 상세 설정 - <i class="fa <%=rule['icon']%>"></i> <%=rule['name']%></h4>
         <p class="card-description">
         <%=rule['description']%>
         </p>
@@ -12,8 +31,11 @@
           <input name="ruleId" value="<%=ruleId%>" type="hidden">
           <%- include(rule_body) %>
 
-          <button type="submit" class="btn btn-success mr-2">저장</button>
-          
+          <%if(ruleId == "null"){%>
+            <button type="submit" class="btn btn-danger mr-2">추가</button>
+          <%}else{%>
+            <button type="submit" class="btn btn-danger mr-2">변경</button>
+          <%}%>
         </form>
       </div>
     </div>

@@ -9,21 +9,22 @@
 
 .json-editor .property,
 .json-editor .value {
+  flex-wrap: wrap;
+  display:inline-block;
   border: none;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px;
   padding: 3px;
   margin-right: 2px;
+
 }
 
 .json-editor .value {
-  width: 454px;
   font-size: 17px;
 }
 .json-editor .property {
   cursor: pointer;
-  width: 454px;
   background-color: #B1C639;
   color: white;
   font-weight: bold;

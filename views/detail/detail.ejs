@@ -3,14 +3,14 @@
 <script src="js/jsontree/jquery.jsoneditor.js"></script>
 
 <div class="row">
-  <div class="col-lg-6 grid-margin" >
+  <div class=" grid-margin" >
     <div class="card" style="flex-wrap: wrap;display:inline-block;">
       <div class="card-body">
         <h4 class="card-title">
           <a href="javascript:previewPrev();">
             <<이전
           </a>
-          미리보기
+            미리보기
           <a href="javascript:previewNext();">
             다음>>
           </a>
@@ -59,127 +59,6 @@
     </div>
   </div>
 
-
-  <div class="col-lg-6 grid-margin stretch-card" style="flex-grow: 100;width:500px;">
-    <div class="card">
-      <div class="card-body">
-        <h4 class="card-title">룰 인스턴스</h4>
-        <p class="card-description">
-          현재 스캐치에 적용되는 룰
-        </p>
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>
-                type
-              </th>
-              <th>
-                값1
-              </th>
-              <th>
-                값2
-              </th>
-              <th>
-                값3
-              </th>
-              <th>
-                수정
-              </th>
-              <th>
-                삭제
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <script>
-              function ruleDelete(ruleId)
-              {
-                if(confirm('삭제하시겠습니까?'))
-                {
-                  var url = "/detail_rule_delete?key=<%=entity['key']%>&revision=<%=entity['revision']%>&ruleId="+ruleId;
-                  document.location.href = url;
-                }
-              };
-            </script>
-            <% for (var i = 0; i < ruleInstance.length; i++) { %>
-              <tr>
-                <td>
-                  <%
-                    var icon = null;
-                    for(var j=0;j<rules.length;j++)
-                    {
-                      if(rules[j]['type'] == ruleInstance[i]['type'])
-                      {
-                        icon = rules[j]['icon'];
-                        break;
-                      }
-                    }
-                  %>
-                  <i class="fa <%=icon%>"/>
-                </td>
-                <td>
-                  <%=ruleInstance[i]['value']['select1']%>
-                </td>
-                <td>
-                  <%=ruleInstance[i]['value']['select2']%>
-                </td>
-                <td>
-                  <%=ruleInstance[i]['value']['select3']%>
-                </td>
-                <td>
-                  <a href="javascript:ruleFormLoad('<%=ruleInstance[i]['type']%>', '<%=ruleInstance[i]['ruleId']%>');">
-                    <button type="button" class="btn btn-warning mr-2">수정</button>
-                  </a>
-                </td>
-                <td>
-                  <a href="javascript:ruleDelete('<%=ruleInstance[i]['ruleId']%>');">
-                    <button type="button" class="btn btn-danger mr-2">삭제</button>
-                  </a>
-                </td>
-              </tr>
-            <%}%>
-
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<%
-  var targetComponentRuleId = null;
-  for(var i=0;i<ruleInstance.length;i++)
-  {
-    if('targetComponent' == ruleInstance[i]['type'])
-    {
-      targetComponentRuleId = ruleInstance[i]['ruleId'];
-      break;
-    }
-  }
-%>
-
-<div class="row">
-  <div class="col-lg-4 grid-margin">
-    <div class="card">
-      <div class="card-body">
-        <h4 class="card-title">룰 추가</h4>
-        <div class="icons-list row">
-          <% for (var i = 0; i < rules.length; i++) { %>
-            <div class="col-sm-8 col-md-4 col-lg-4">
-              <%if(rules[i]['type'] == 'targetComponent' && targetComponentRuleId != null){%>
-                <a href="javascript:ruleFormLoad('<%=rules[i]['type']%>', '<%=targetComponentRuleId%>');">
-              <%}else{%>
-                <a href="javascript:ruleFormLoad('<%=rules[i]['type']%>', null);">
-              <%}%>
-
-                <i class="fa <%=rules[i]['icon']%>"></i><%=rules[i]['name']%>
-              </a>
-            </div>
-          <%}%>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <script>
   function ruleFormLoad(type, ruleId)
@@ -332,9 +211,133 @@
   <div id='ruleDetailContainer' class="col-lg-8 grid-margin">
   </div>
 
+
 </div>
+
+<%
+  var targetComponentRuleId = null;
+  for(var i=0;i<ruleInstance.length;i++)
+  {
+    if('targetComponent' == ruleInstance[i]['type'])
+    {
+      targetComponentRuleId = ruleInstance[i]['ruleId'];
+      break;
+    }
+  }
+%>
+
 <div class="row">
 
+  <!-- <div class="col-lg-4 grid-margin" >
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">룰 추가</h4>
+        <div class="icons-list row">
+          <% for (var i = 0; i < rules.length; i++) { %>
+            <div class="col-sm-8 col-md-4 col-lg-4">
+              <%if(rules[i]['type'] == 'targetComponent' && targetComponentRuleId != null){%>
+                <a href="javascript:ruleFormLoad('<%=rules[i]['type']%>', '<%=targetComponentRuleId%>');">
+              <%}else{%>
+                <a href="javascript:ruleFormLoad('<%=rules[i]['type']%>', null);">
+              <%}%>
+
+                <i class="fa <%=rules[i]['icon']%>"></i><%=rules[i]['name']%>
+              </a>
+            </div>
+          <%}%>
+        </div>
+      </div>
+    </div>
+  </div> -->
+
+
+
+
+
+  <div class="col-lg-12 grid-margin stretch-card" style="flex-grow: 100;width:500px;">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">룰 인스턴스</h4>
+        <p class="card-description">
+          현재 스캐치에 적용되는 룰
+        </p>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>
+                type
+              </th>
+              <th>
+                값1
+              </th>
+              <th>
+                값2
+              </th>
+              <th>
+                값3
+              </th>
+              <th>
+                수정
+              </th>
+              <th>
+                삭제
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <script>
+              function ruleDelete(ruleId)
+              {
+                if(confirm('삭제하시겠습니까?'))
+                {
+                  var url = "/detail_rule_delete?key=<%=entity['key']%>&revision=<%=entity['revision']%>&ruleId="+ruleId;
+                  document.location.href = url;
+                }
+              };
+            </script>
+            <% for (var i = 0; i < ruleInstance.length; i++) { %>
+              <tr>
+                <td>
+                  <%
+                    var icon = null;
+                    for(var j=0;j<rules.length;j++)
+                    {
+                      if(rules[j]['type'] == ruleInstance[i]['type'])
+                      {
+                        icon = rules[j]['icon'];
+                        break;
+                      }
+                    }
+                  %>
+                  <i class="fa <%=icon%>"/>
+                </td>
+                <td>
+                  <%=ruleInstance[i]['value']['select1']%>
+                </td>
+                <td>
+                  <%=ruleInstance[i]['value']['select2']%>
+                </td>
+                <td>
+                  <%=ruleInstance[i]['value']['select3']%>
+                </td>
+                <td>
+                  <a href="javascript:ruleFormLoad('<%=ruleInstance[i]['type']%>', '<%=ruleInstance[i]['ruleId']%>');">
+                    <button type="button" class="btn btn-warning mr-2">수정</button>
+                  </a>
+                </td>
+                <td>
+                  <a href="javascript:ruleDelete('<%=ruleInstance[i]['ruleId']%>');">
+                    <button type="button" class="btn btn-danger mr-2">삭제</button>
+                  </a>
+                </td>
+              </tr>
+            <%}%>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -416,4 +419,23 @@
           <div id='data_holder' class='json-editor'></div>
         </div>
       </div>
+</div>
+
+
+<style type="text/css">
+            #block_info_tag{
+                position: absolute;
+                top: 30px;
+                left: 30px;
+                visibility : hidden;
+            }
+        </style>
+
+<div id="block_info_tag">
+  <!-- <label id="block_info_tag_path" class="badge badge-success">
+    Fixed
+  </label><br/> -->
+  <label id="block_info_tag_text" class="badge badge-info">
+    Fixed
+  </label>
 </div>
