@@ -13964,9 +13964,9 @@ input:focus {
       .navbar .navbar-brand-wrapper .navbar-brand:active, .navbar .navbar-brand-wrapper .navbar-brand:focus, .navbar .navbar-brand-wrapper .navbar-brand:hover {
         color: #424546; }
       .navbar .navbar-brand-wrapper .navbar-brand img {
-        width: calc(185px - 130px);
+        width: 140px;
         max-width: 100%;
-        height: 28px;
+        height: 48px;
         margin: auto;
         vertical-align: middle; }
     .navbar .navbar-brand-wrapper .brand-logo-mini {

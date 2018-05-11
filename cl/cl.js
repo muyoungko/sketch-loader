@@ -15,7 +15,7 @@ function initcl()
     var clDepth = $(this).attr('cl-depth')
     //console.log(clName + ' - ' + clDepth);
     layerByDepth[clName] = this;
-    mostTopVisible(this);
+    mostTopVisible();
 
   },
   function (e) {
@@ -23,13 +23,21 @@ function initcl()
     var clDepth = $(this).attr('cl-depth')
     delete layerByDepth[clName];
     $(this).removeClass("clfocus");
-    mostTopVisible(this);
+    mostTopVisible();
   });
+
+  $('.cl').click(
+    function (e) {
+      var tthis = this;
+      var clName = mostTopVisible();
+      if(clName == $(this).attr('cl-name'))
+        clNameClick(clName);
+    }
+  );
 }
 
-console.log(layerByDepth.keys().length);
 
-function mostTopVisible(element)
+function mostTopVisible(func)
 {
   var mostTop = true;
   var iter = layerByDepth.keys();
@@ -58,7 +66,6 @@ function mostTopVisible(element)
   if(mostTopElement != undefined)
   {
     $(mostTopElement).addClass("clfocus");
-    $('#block_info').css('visibility', 'visible');
 
     var position = $(mostTopElement).offset();
     position['left'] = position['left'] + $(mostTopElement).width() + 20;
@@ -70,12 +77,14 @@ function mostTopVisible(element)
     var clName = $(mostTopElement).attr('cl-name');
     $('#block_info_tag_path').html(path);
     $('#block_info_tag_text').html(clName);
+
+    //console.log(func);
+    var name = $(mostTopElement).attr('cl-name');
+    return name;
   }
   if(len == 0)
   {
-    $(element).removeClass("clfocus");
-    $('#block_info').css('visibility', 'hidden');
     $('#block_info_tag').css('visibility', 'hidden');
   }
-
+  return null;
 }

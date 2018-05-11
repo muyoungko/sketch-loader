@@ -14,7 +14,7 @@
 
 
 <div class="row">
-  <div class="col-lg-6 grid-margin stretch-card">
+  <div class="col-lg-8 grid-margin stretch-card">
     <div class="card">
       <div class="card-body">
         <h4 class="card-title">홈탭</h4>
@@ -55,9 +55,14 @@
 
 
 
+<script>
+function clNameClick(clName)
+{
+  $('#block_info').css('visibility', 'visible');
+}
+</script>
 
-
-<div id="block_info" class ="layer_fixed">
+<div id="block_info" class ="layer_fixed" style="visibility:hidden;">
   <div class="col-lg-12 grid-margin stretch-card">
     <div class="card">
       <div class="card-body">
@@ -73,15 +78,19 @@
             <div class="col-sm-9">
               <label for="exampleInputPassword2" class="col-sm-9 col-form-label">4</label>
             </div>
-
-            <label for="exampleInputPassword2" class="col-sm-3 col-form-label">PUI Json</label>
+            
+            <label for="exampleInputPassword2" class="col-sm-3 col-form-label"></label>
             <div class="col-sm-9">
-              <button type="submit" class="btn btn-primary btn-fw">조회</button>
+
+              <button type="submit" class="btn btn-secondary">블록상세</button>
+
+              <button type="submit" class="btn btn-warning">나만의 블록으로 교체</button>
             </div>
 
-            <label class="col-sm-3 col-form-label">블록수정</label>
+            <label for="exampleInputPassword2" class="col-sm-3 col-form-label"></label>
             <div class="col-sm-9">
-              <button type="submit" class="btn btn-secondary btn-fw">블록상세>></button>
+              <button class="btn btn-facebook">A/B 테스트</button>
+              <button class="btn btn-behance">A/B 테스트 결과확인</button>
             </div>
 
             <label class="col-sm-3 col-form-label">효율기준</label>

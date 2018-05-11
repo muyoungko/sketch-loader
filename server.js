@@ -579,7 +579,6 @@ function convertPuiToPlat(url, func)
 {
 	var command1 = 'java -jar cloudlayoutconverter.jar puiconvert "'+url+'"';
 	runSingleCommandWithWait(command1, function(res){
-		console.log(res);
 		func(true, JSON.parse(res));
 	}, function(res){
 		func(false, res);
@@ -655,6 +654,7 @@ function isEmpty(str)
 
 //java -jar cloudlayoutconverter.jar c '/Users/muyoungko/Documents/sketch-loader/file/2D3DE24E-692C-4F98-B0A9-FEF2B759B513/10000' '{\"targetComponent\":\"ProductDeal_Shocking\"}
 function runSingleCommandWithWait(command, success, failed) {
+	console.log(command);
 	exec(command, {maxBuffer: 1024 * 500}, function(error, stdout, stderr){
 		success(stdout)
 	});
