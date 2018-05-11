@@ -310,6 +310,9 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 
 	app.get('/detail_rule_form', (req, res) => {
 		var json = {};
+		json['key'] = req.query.key;
+		json['revision'] = req.query.revision;
+		console.log(json);
 		var type = req.query.type;
 		var ruleId = req.query.ruleId;
 		//유니크 룰일 경우 단일 인스턴스를 찾는다.
@@ -327,6 +330,8 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 						break;
 					}
 				}
+				if(theRuleInstance == null)
+					theRuleInstance = {};
 				res.render('detail/rule/template.ejs', {rule_body:type+'.ejs'
 					, key:req.query.key, revision:req.query.revision, rule:rule, type:type
 					, ruleId:ruleId, ruleInstance:theRuleInstance, rules:rules
@@ -445,12 +450,19 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 				var targetBlock = getTargetFromRuleInstance(ruleInstance);
 				var blockSampleJson = {type:targetBlock};
 				db.collection('blockSample').find(blockSampleJson).project({}).toArray(function(err, blockSample){
-					var cloudHtml = results[0]['cloudHtml'];
-					var sampleLength = blockSample[0]['sampleData'].length;
-					var sampleDataJson = blockSample[0]['sampleData'][index%sampleLength];
-					//console.log(ruleInstance);
-					var wrapedCloudHtml = wrapCloudHtml(cloudHtml, ruleInstance, sampleDataJson);
-					res.render('detail/detail_preview.ejs', {cloudHtml:wrapedCloudHtml});
+					if(blockSample.length > 0)
+					{
+						var cloudHtml = results[0]['cloudHtml'];
+						var sampleLength = blockSample[0]['sampleData'].length;
+						var sampleDataJson = blockSample[0]['sampleData'][index%sampleLength];
+						//console.log(ruleInstance);
+						var wrapedCloudHtml = wrapCloudHtml(cloudHtml, ruleInstance, sampleDataJson);
+						res.render('detail/detail_preview.ejs', {cloudHtml:wrapedCloudHtml});
+					}
+					else {
+						var wrapedCloudHtml = wrapCloudHtml(cloudHtml, ruleInstance, null);
+						res.render('detail/detail_preview.ejs', {cloudHtml:wrapedCloudHtml});
+					}
 				});
 			});
 
@@ -593,10 +605,10 @@ function generateCloudJsonHtml(key, revision, func)
 	db.collection('entityRule').find(json).project({type:1,value:1}).toArray(function(err, results){
 		var jsonParam = JSON.stringify(results);
 		jsonParam = jsonParam.replace(/\"/g,'\\\"');
-		var command1 = 'java -jar cloudlayoutconverter.jar c "/Users/muyoungko/Documents/sketch-loader/file/'+key+'/'+revision+'" "'+jsonParam+'"';
+		var command1 = 'java -jar cloudlayoutconverter.jar c "'+__dirname+'/file/'+key+'/'+revision+'" "'+jsonParam+'"';
 		console.log("generateCloudJsonHtml = " + command1);
 		runSingleCommandWithWait(command1, function(couldJsonRes){
-			var command2 = 'java -jar cloudlayoutconverter.jar cw "/Users/muyoungko/Documents/sketch-loader/file/'+key+'/'+revision+'" "'+jsonParam+'"';
+			var command2 = 'java -jar cloudlayoutconverter.jar cw "'+__dirname+'/file/'+key+'/'+revision+'" "'+jsonParam+'"';
 			runSingleCommandWithWait(command2, function(htmlJsonRes){
 
 				var cloudJson = JSON.parse(couldJsonRes);
@@ -689,7 +701,7 @@ function getTargetFromRuleInstance(ruleInstance)
 }
 function wrapCloudHtml(cloudHtml, ruleInstance, sampleDataJson){
 	var wrapedCloudHtml = cloudHtml;
-	for(var i=0;i<ruleInstance.length;i++)
+	for(var i=0;sampleDataJson != null && i<ruleInstance.length;i++)
 	{
 		var type = ruleInstance[i]['type'];
 		var select1 = ruleInstance[i]['value']['select1'];
