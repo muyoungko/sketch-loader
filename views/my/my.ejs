@@ -17,9 +17,6 @@
               Block name
             </th>
             <th>
-              Author
-            </th>
-            <th>
               Status
             </th>
             <th>
@@ -33,6 +30,9 @@
             </th>
             <th>
               편집
+            </th>
+            <th>
+              삭제
             </th>
           </tr>
         </thead>
@@ -57,9 +57,6 @@
                   </a>
                 </td>
                 <td>
-                  <%=list[i]['author']%>
-                </td>
-                <td>
                   <label class="badge badge-danger">Draft</label>
                 </td>
                 <td>
@@ -75,10 +72,15 @@
                 </td>
                 <td>
                   <a href="/detail?key=<%=list[i]['key']%>&revision=<%=list[i]['revision']%>">
-                  <button type="submit" class="btn btn-secondary btn-fw">블록상세>></button>
+                  <button type="submit" class="btn btn-secondary">블록상세>></button>
                   </a>
                 </td>
 
+                <td>
+                  <a href="/delete?key=<%=list[i]['key']%>&revision=<%=list[i]['revision']%>">
+                  <button type="submit" class="btn btn-danger">삭제</button>
+                  </a>
+                </td>
               </tr>
           <%}%>
         </tbody>

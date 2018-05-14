@@ -312,7 +312,7 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 		var json = {};
 		json['key'] = req.query.key;
 		json['revision'] = req.query.revision;
-		console.log(json);
+
 		var type = req.query.type;
 		var ruleId = req.query.ruleId;
 		//유니크 룰일 경우 단일 인스턴스를 찾는다.
@@ -476,6 +476,25 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 		db.collection('entity').find(json).project({key:true,revision:true,cloudJson:true}).toArray(function(err, results){
 			res.json(results[0]['cloudJson']);
 		});
+	});
+
+	app.get('/delete', (req, res) => {
+		var json = {};
+		json['key'] = req.query.key;
+		json['revision'] = req.query.revision;
+		if(isEmpty(req.query.key) || isEmpty(req.query.revision))
+			return res.status(200).send("못지워");
+
+		db.collection('entity').remove(json, function(err, obj) {
+	    if (err)
+			 return res.status(400).send(err);
+			db.collection('entityRule').remove(json, function(err, obj) {
+		    if (err)
+					return res.status(400).send(err);
+				res.redirect('/my');
+		  });
+	  });
+
 	});
 
 	app.post('/deploy', (req, res) => {
