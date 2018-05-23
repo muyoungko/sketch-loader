@@ -503,7 +503,9 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
     return res.status(400).send('No files were uploaded.');
 
 	  let file = req.files.file;
-		console.log(req.files.file.name);
+		// console.log(req.files.file.name);
+		// console.log(req.body.deployJson);
+
     var zip = './file/'+fileTempKey+'.zip';
 		var fileTempKey = String(Date.now());
 	  file.mv(zip, function(err) {
@@ -541,10 +543,18 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 					json['key'] = key;
 					json['revision'] = revision;
 
+
+					var deployJson = {};
+					if(req.body.deployJson)
+					{
+						deployJson = JSON.parse(req.body.deployJson);
+					}
+
 					//TODO 계정관리
 					var newvalue = {'key': key, 'revision': revision ,'raw':b64,
 						'author':'muyoungko',
-						'update': String(Date.now())
+						'update': String(Date.now()),
+						'deployJson' : deployJson
 					};
 					db.collection('entity').update(json, { $set: newvalue }, { upsert: true }, (err, result) => {
 						if (err) {
@@ -621,6 +631,7 @@ function generateCloudJsonHtml(key, revision, func)
 	var json = {};
 	json['key'] = key;
 	json['revision'] = revision;
+	//룰을 가져와서 generate에 활용한다.
 	db.collection('entityRule').find(json).project({type:1,value:1}).toArray(function(err, results){
 		var jsonParam = JSON.stringify(results);
 		jsonParam = jsonParam.replace(/\"/g,'\\\"');
@@ -642,6 +653,7 @@ function generateCloudJsonHtml(key, revision, func)
 				};
 				newvalue['cloudJson'] = couldJsonRes;
 				newvalue['cloudHtml'] = htmlJsonRes;
+				//generate된 내용을 업데이트 한다.
 				db.collection('entity').update(json, { $set: newvalue }, { upsert: true }, (err, result) => {
 					if (err) {
 						func(false, err);
