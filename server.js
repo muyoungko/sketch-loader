@@ -44,8 +44,16 @@ const rules = [
 	{
 			type:'mappingImage',
 			name:'이미지매핑',
-			description:'스캐치의 노드를 PUI블록의 데이터와 매핑합니다',
+			description:'스캐치의 노드를 PUI블록의 이미지 데이터와 매핑합니다',
 			icon:'fa-file-photo-o',
+			unique: false,
+			elements:['node','data']
+	},
+	{
+			type:'mappingLocalImage',
+			name:'로컬 이미지 매핑',
+			description:'스캐치의 노드를 로컬 이미지와 매핑합니다.',
+			icon:'fa-image',
 			unique: false,
 			elements:['node','data']
 	},
@@ -62,6 +70,14 @@ const rules = [
 			name:'클릭매핑',
 			description:'스캐치의 노드에 클릭기능을 추가합니다',
 			icon:'fa-external-link',
+			unique: false,
+			elements:['node','data']
+	},
+	{
+			type:'layout',
+			name:'레이아웃 설정',
+			description:'가변좌우상하, 센터, 넥스트 정렬',
+			icon:'fa-arrows-h',
 			unique: false,
 			elements:['node','data']
 	},
@@ -438,6 +454,16 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 			});
 	});
 
+	app.get('/all_block_meta', (req, res) => {
+		var json = {};
+		json['revision'] = req.query.revision;
+		db.collection('entity').find(json).project({cloudJson:true}).toArray(function(err, results){
+			db.collection('entityRule').find(json).project({type:1,value:1}).toArray(function(err, ruleInstance){
+
+			});
+		});
+	});
+
 	app.get('/detail_preview', (req, res) => {
 		var json = {};
 		json['key'] = req.query.key;
@@ -462,6 +488,37 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 					else {
 						var wrapedCloudHtml = wrapCloudHtml(cloudHtml, ruleInstance, null);
 						res.render('detail/detail_preview.ejs', {cloudHtml:wrapedCloudHtml});
+					}
+				});
+			});
+
+		});
+	});
+
+	app.get('/detail_preview_real', (req, res) => {
+		var json = {};
+		json['key'] = req.query.key;
+		json['revision'] = req.query.revision;
+		var index = req.query.data_index;
+		if(isEmpty(index))
+			index = 0;
+		db.collection('entity').find(json).project({key:true,revision:true,cloudHtml:true}).toArray(function(err, results){
+			db.collection('entityRule').find(json).project({type:1,value:1}).toArray(function(err, ruleInstance){
+				var targetBlock = getTargetFromRuleInstance(ruleInstance);
+				var blockSampleJson = {type:targetBlock};
+				db.collection('blockSample').find(blockSampleJson).project({}).toArray(function(err, blockSample){
+					if(blockSample.length > 0)
+					{
+						var cloudHtml = results[0]['cloudHtml'];
+						var sampleLength = blockSample[0]['sampleData'].length;
+						var sampleDataJson = blockSample[0]['sampleData'][index%sampleLength];
+						//console.log(ruleInstance);
+						var wrapedCloudHtml = wrapCloudHtml(cloudHtml, ruleInstance, sampleDataJson);
+						res.render('detail/detail_preview_real.ejs', {cloudHtml:wrapedCloudHtml});
+					}
+					else {
+						var wrapedCloudHtml = wrapCloudHtml(cloudHtml, ruleInstance, null);
+						res.render('detail/detail_preview_real.ejs', {cloudHtml:wrapedCloudHtml});
 					}
 				});
 			});
@@ -564,7 +621,11 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 						generateCloudJsonHtml(key, revision, function(success, err){
 								if(success)
 								{
-									res.redirect('/detail?key='+key+'&revision='+revision);
+									res.setHeader('Content-Type', 'application/json');
+									var returnUrl = 'http://www.sering.co.kr:3000/detail?key='+key+'&revision='+revision;
+    							res.send(JSON.stringify({ url: returnUrl }));
+
+									//res.redirect('/detail?key='+key+'&revision='+revision);
 									//res.send('finished');
 								}
 								else {
@@ -632,43 +693,50 @@ function generateCloudJsonHtml(key, revision, func)
 	json['key'] = key;
 	json['revision'] = revision;
 	//룰을 가져와서 generate에 활용한다.
-	db.collection('entityRule').find(json).project({type:1,value:1}).toArray(function(err, results){
-		var jsonParam = JSON.stringify(results);
-		jsonParam = jsonParam.replace(/\"/g,'\\\"');
-		var command1 = 'java -jar cloudlayoutconverter.jar c "'+__dirname+'/file/'+key+'/'+revision+'" "'+jsonParam+'"';
-		console.log("generateCloudJsonHtml = " + command1);
-		runSingleCommandWithWait(command1, function(couldJsonRes){
-			var command2 = 'java -jar cloudlayoutconverter.jar cw "'+__dirname+'/file/'+key+'/'+revision+'" "'+jsonParam+'"';
-			runSingleCommandWithWait(command2, function(htmlJsonRes){
+	db.collection('entity').find(json).project({deployJson:1}).toArray(function(err, entityResult){
 
-				var cloudJson = JSON.parse(couldJsonRes);
-				var json = {};
-				json['key'] = key;
-				json['revision'] = revision;
+		var deployJson = JSON.stringify(entityResult[0].deployJson);
+		deployJson = deployJson.replace(/\"/g,'\\\"');
 
-				//TODO 계정관리
-				var newvalue = {'key': key, 'revision': revision ,
-					'author':'muyoungko',
-					'update': String(Date.now())
-				};
-				newvalue['cloudJson'] = couldJsonRes;
-				newvalue['cloudHtml'] = htmlJsonRes;
-				//generate된 내용을 업데이트 한다.
-				db.collection('entity').update(json, { $set: newvalue }, { upsert: true }, (err, result) => {
-					if (err) {
-						func(false, err);
-					}
-					func(true);
-				})
+		db.collection('entityRule').find(json).project({type:1,value:1}).toArray(function(err, results){
+			var jsonParam = JSON.stringify(results);
+			jsonParam = jsonParam.replace(/\"/g,'\\\"');
+			var command1 = 'java -jar cloudlayoutconverter.jar c '+key+' ' + revision + ' "'+__dirname+'/file/'+key+'/'+revision+'" "'+jsonParam+'" "'+deployJson+'"';
+			console.log("generateCloudJsonHtml = " + command1);
+			runSingleCommandWithWait(command1, function(couldJsonRes){
+				var command2 = 'java -jar cloudlayoutconverter.jar cw ' + key +' ' + revision + ' "'+__dirname+'/file/'+key+'/'+revision+'" "'+jsonParam+'" "'+deployJson+'"';
+				runSingleCommandWithWait(command2, function(htmlJsonRes){
+
+					var cloudJson = JSON.parse(couldJsonRes);
+					var json = {};
+					json['key'] = key;
+					json['revision'] = revision;
+
+					//TODO 계정관리
+					var newvalue = {'key': key, 'revision': revision ,
+						'author':'muyoungko',
+						'update': String(Date.now())
+					};
+					newvalue['cloudJson'] = couldJsonRes;
+					newvalue['cloudHtml'] = htmlJsonRes;
+					//generate된 내용을 업데이트 한다.
+					db.collection('entity').update(json, { $set: newvalue }, { upsert: true }, (err, result) => {
+						if (err) {
+							func(false, err);
+						}
+						func(true);
+					})
+				}, function(commandRes){
+					func(false, commandRes);
+				});
+
 			}, function(commandRes){
 				func(false, commandRes);
 			});
 
-		}, function(commandRes){
-			func(false, commandRes);
 		});
-
 	});
+
 }
 
 function base64_encode(file) {
@@ -741,10 +809,35 @@ function wrapCloudHtml(cloudHtml, ruleInstance, sampleDataJson){
 		var select4 = ruleInstance[i]['value']['select4'];
 		var select5 = ruleInstance[i]['value']['select5'];
 		if(type == 'mappingText'){
-			wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', sampleDataJson[select2]);
+			var tomb =  String(select2);
+			if(tomb.startsWith('/'))
+			{
+				tomb = tomb.split('/')[1];
+				var tombs = tomb.split('+');
+				var r = '';
+				for(var j=0;j<tombs.length;j++)
+				{
+					var ttt = tombs[j];
+					if(ttt.startsWith('\''))
+					{
+						ttt = ttt.split('\'')[1];
+						r += ttt;
+					}
+					else {
+						r += sampleDataJson[ttt];
+					}
+				}
+				wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', r);
+			}
+			else
+				wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', sampleDataJson[select2]);
+
 		}else if(type == 'mappingImage'){
 			wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', sampleDataJson[select2]);
-		}else if(type == 'mappingClick'){
+		}else if(type == 'mappingLocalImage'){
+			//로컬이미지는 CJConverter의 puiSketchHtml에 그냥 밖혀서 나온다.
+		}
+		else if(type == 'mappingClick'){
 			wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', sampleDataJson[select2]);
 		}
 	}

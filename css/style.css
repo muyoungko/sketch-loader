@@ -11193,7 +11193,7 @@ button.close {
   z-index: 1070;
   display: block;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-family: Roboto, "Droid Sans", "BaseLine", "Apple SD Gothic Neo", Tahoma, Dotum, sans-serif;
   font-style: normal;
   font-weight: 400;
   line-height: 1.5;
@@ -13942,7 +13942,7 @@ input:focus {
 /* Navbar */
 .navbar {
   font-family: "Poppins", sans-serif;
-  background: linear-gradient(88deg, #318be3, #04befe);
+  background: linear-gradient(88deg, #ff0000, #ff0000);
   transition: background 0.25s ease;
   -webkit-transition: background 0.25s ease;
   -moz-transition: background 0.25s ease;
