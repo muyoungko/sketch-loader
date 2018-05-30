@@ -545,7 +545,8 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 		json['key'] = req.query.key;
 		json['revision'] = req.query.revision;
 		db.collection('entity').find(json).project({key:true,revision:true,cloudJson:true}).toArray(function(err, results){
-			res.json(results[0]['cloudJson']);
+			res.setHeader('Content-Type', 'application/json');
+			res.send(results[0]['cloudJson']);
 		});
 	});
 
