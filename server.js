@@ -319,7 +319,8 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 				var ruleId = req.query.ruleId;
 
 				db.collection('entityRule').find(json).project({}).toArray(function(err, ruleInstance){
-					res.render('template.ejs', {body_page:'detail/detail.ejs', entity:results[0], rules:rules, ruleInstance:ruleInstance});
+					res.render('template.ejs', {body_page:'detail/detail.ejs', entity:results[0],
+					rules:rules, ruleInstance:ruleInstance, ruleId:ruleId});
 				});
 			});
 		});
@@ -334,6 +335,7 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 		//유니크 룰일 경우 단일 인스턴스를 찾는다.
 		if(isUniqueRule(rules, req.query.type))
 		{
+			console.log(json);
 			db.collection('entityRule').find(json).project({}).toArray(function(err, ruleInstance){
 				var rule = getRuleMeta(rules, type);
 				var theRuleInstance = null;
@@ -354,11 +356,14 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 				});
 			});
 		}
-		else if(req.query.ruleId != 'null')
+		else if(!isEmpty(req.query.ruleId))
 		{
 			json['ruleId'] = req.query.ruleId;
 			db.collection('entityRule').find(json).project({}).toArray(function(err, ruleInstance){
+				console.log(json);
+				var type =  ruleInstance[0]['type'];
 				var rule = getRuleMeta(rules, type);
+				//console.log(ruleInstance);
 				res.render('detail/rule/template.ejs', {rule_body:type+'.ejs'
 					, key:req.query.key, revision:req.query.revision, rule:rule, type:type
 					, ruleId:ruleId, ruleInstance:ruleInstance[0], rules:rules
@@ -366,6 +371,7 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 			});
 		}
 		else {
+			console.log("esle " + json);
 			var rule = getRuleMeta(rules, type);
 			res.render('detail/rule/template.ejs', {rule_body:type+'.ejs'
 				, key:req.query.key, revision:req.query.revision, rule:rule, type:type
@@ -435,6 +441,14 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 		newvalue['value']['select3'] = req.query.select3;
 		newvalue['value']['select4'] = req.query.select4;
 		newvalue['value']['select5'] = req.query.select5;
+		newvalue['value']['select6'] = req.query.select6;
+		newvalue['value']['select7'] = req.query.select7;
+		newvalue['value']['select8'] = req.query.select8;
+		newvalue['value']['select9'] = req.query.select9;
+		newvalue['value']['select10'] = req.query.select10;
+		newvalue['value']['select11'] = req.query.select11;
+
+		console.log(newvalue);
 		db.collection('entityRule').update(json, { $set: newvalue }, { upsert: true }, (err, result) => {
 			if (err) {
 				res.send(err);
@@ -444,7 +458,7 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 			generateCloudJsonHtml(req.query.key, req.query.revision, function(success, err){
 					if(success)
 					{
-						res.redirect('/detail?key='+req.query.key+'&revision='+req.query.revision);
+						res.redirect('/detail?key='+req.query.key+'&revision='+req.query.revision+'&ruleId=' + json['ruleId'] );
 					}
 					else {
 						console.log(err);
@@ -757,7 +771,7 @@ function base64_decode(base64str) {
 
 function isEmpty(str)
 {
-	if(str == undefined || str == null || str =='')
+	if(str == undefined || str == null || str =='' || str =='null')
 		return true;
 	else
 		return false;
@@ -808,6 +822,13 @@ function wrapCloudHtml(cloudHtml, ruleInstance, sampleDataJson){
 		var select3 = ruleInstance[i]['value']['select3'];
 		var select4 = ruleInstance[i]['value']['select4'];
 		var select5 = ruleInstance[i]['value']['select5'];
+		var select6 = ruleInstance[i]['value']['select6'];
+		var select7 = ruleInstance[i]['value']['select7'];
+		var select8 = ruleInstance[i]['value']['select8'];
+		var select9 = ruleInstance[i]['value']['select9'];
+		var select10 = ruleInstance[i]['value']['select10'];
+		var select11 = ruleInstance[i]['value']['select11'];
+
 		if(type == 'mappingText'){
 			var tomb =  String(select2);
 			if(tomb.startsWith('/'))

@@ -21,21 +21,46 @@ function clNameClick(clName)
 <div class="form-group row">
   <label class="col-sm-3 col-form-label">가로정렬</label>
   <div class="btn-group" role="group" aria-label="Basic example">
-
-    <a href="javascript:;">
-      <button type="button" class="btn btn-outline-warning icon-btn" title='왼쪽으로'>
+    <script>
+    </script>
+    <input type="hidden" name="select2" id="select2" value="<%=ruleInstance['value']?ruleInstance['value']['select2']:""%>"/>
+    <script>
+      function select2(index){
+        $('#select2').val(index);
+        //alert('call ' + index);
+        for(var i=0;i<3;i++)
+        {
+          if(i==Number(index))
+          {
+            //alert('on ' + $('#select2'+(i)).length);
+            $('#select2'+(i)).addClass('btn-outline-warning');
+            $('#select2'+(i)).removeClass('btn-outline-secondary');
+          }
+          else {
+            //alert('off ' + $('#select2'+(i)).length);
+            $('#select2'+(i)).addClass('btn-outline-secondary');
+            $('#select2'+(i)).removeClass('btn-outline-warning');
+          }
+        }
+      }
+      $(function(){
+        select2(<%=ruleInstance['value']?ruleInstance['value']['select2']:"0"%>);
+      });
+    </script>
+    <a href="javascript:select2(0);">
+      <button id="select20" type="button" class="btn btn-outline-warning icon-btn" title='왼쪽으로'>
         <i class="fa fa-align-left"></i>
       </button>
     </a>
 
-    <a href="javascript:;">
-      <button type="button" class="btn btn-outline-secondary icon-btn" title='중앙'>
+    <a href="javascript:select2(1);">
+      <button id="select21" type="button" class="btn btn-outline-secondary icon-btn" title='중앙'>
         <i class="fa fa-align-center"></i>
       </button>
     </a>
 
-    <a href="javascript:;">
-      <button type="button" class="btn btn-outline-secondary icon-btn" title='오른쪽으로'>
+    <a href="javascript:select2(2);">
+      <button id="select22" type="button" class="btn btn-outline-secondary icon-btn" title='오른쪽으로'>
         <i class="fa fa-align-right"></i>
       </button>
     </a>
@@ -43,24 +68,46 @@ function clNameClick(clName)
 </div>
 
 
-<div class="form-group row">
+<div class="form-group row" style='display:none'>
   <label for="exampleInputEmail2" class="col-sm-3 col-form-label">세로정렬</label>
   <div class="btn-group" role="group" aria-label="Basic example">
 
-    <a href="javascript:;">
-      <button type="button" class="btn btn-outline-warning icon-btn" title='위로'>
+    <input type="hidden" name="select3" id="select3" value="<%=ruleInstance['value']?ruleInstance['value']['select3']:""%>"/>
+    <script>
+      function select3(index){
+        $('#select3').val(index);
+        for(var i=0;i<3;i++)
+        {
+          if(i==Number(index))
+          {
+            $('#select3'+(i)).addClass('btn-outline-warning');
+            $('#select3'+(i)).removeClass('btn-outline-secondary');
+          }
+          else {
+            $('#select3'+(i)).addClass('btn-outline-secondary');
+            $('#select3'+(i)).removeClass('btn-outline-warning');
+          }
+        }
+      }
+      $(function(){
+        select3(<%=ruleInstance['value']?ruleInstance['value']['select3']:"0"%>);
+      });
+    </script>
+
+    <a href="javascript:select3(0);">
+      <button id="select30" type="button" class="btn btn-outline-warning icon-btn" title='위로'>
         <i class="fa fa-long-arrow-up"></i>
       </button>
     </a>
 
-    <a href="javascript:;">
-      <button type="button" class="btn btn-outline-secondary icon-btn" title='중앙'>
+    <a href="javascript:select3(1);">
+      <button id="select31" type="button" class="btn btn-outline-secondary icon-btn" title='중앙'>
         <i class="fa fa-align-center"></i>
       </button>
     </a>
 
-    <a href="javascript:;">
-      <button type="button" class="btn btn-outline-secondary icon-btn" title='아래'>
+    <a href="javascript:select3(2);">
+      <button id="select32" type="button" class="btn btn-outline-secondary icon-btn" title='아래'>
         <i class="fa fa-long-arrow-down"></i>
       </button>
     </a>
@@ -76,7 +123,7 @@ function clNameClick(clName)
     <div class="form-check form-check-flat">
       <label class="form-check-label">
         <i class="fa fa-arrows-h"></i>
-        <input type="checkbox" class="form-check-input">
+        <input id="select4" name="select4" type="checkbox" class="form-check-input" <%=ruleInstance['value']&&ruleInstance['value']['select4']=='on'?"checked":""%>>
           좌우가변
         <i class="input-helper"></i>
       </label>
@@ -87,7 +134,7 @@ function clNameClick(clName)
     <div class="form-check form-check-flat">
       <label class="form-check-label">
         <i class="fa fa-arrows-v"></i>
-        <input type="checkbox" class="form-check-input">
+        <input id="select5" name="select5" type="checkbox" class="form-check-input" <%=ruleInstance['value']&&ruleInstance['value']['select5']=='on'?"checked":""%>>
           상하가변
         <i class="input-helper"></i>
       </label>
@@ -98,9 +145,9 @@ function clNameClick(clName)
     <label for="exampleInputEmail2" class="col-sm-3 col-form-label">상대위치 - 다음의 오른쪽</label>
     <div class="col-sm-9">
       <div class="input-group col-xs-12">
-        <input name="select1" id="select4" value="<%=ruleInstance['value']?ruleInstance['value']['select4']:""%>"  type="text" class="form-control" placeholder="타겟 선택">
+        <input name="select6" id="select6" value="<%=ruleInstance['value']?ruleInstance['value']['select6']:""%>"  type="text" class="form-control" placeholder="타겟 선택">
         <span class="input-group-append">
-          <button id="select1Button" onclick="javascript:pickSketch('select4');" class="file-upload-browse btn btn-info" type="button">타겟찾기</button>
+          <button id="select1Button" onclick="javascript:pickSketch('select6');" class="file-upload-browse btn btn-info" type="button">타겟찾기</button>
         </span>
       </div>
     </div>
@@ -110,10 +157,20 @@ function clNameClick(clName)
     <label for="exampleInputEmail2" class="col-sm-3 col-form-label">상대위치 - 다음의 아래</label>
     <div class="col-sm-9">
       <div class="input-group col-xs-12">
-        <input name="select1" id="select5" value="<%=ruleInstance['value']?ruleInstance['value']['select5']:""%>"  type="text" class="form-control" placeholder="타겟 선택">
+        <input name="select7" id="select7" value="<%=ruleInstance['value']?ruleInstance['value']['select7']:""%>"  type="text" class="form-control" placeholder="타겟 선택">
         <span class="input-group-append">
-          <button id="select1Button" onclick="javascript:pickSketch('select5');" class="file-upload-browse btn btn-info" type="button">타겟찾기</button>
+          <button id="select1Button" onclick="javascript:pickSketch('select7');" class="file-upload-browse btn btn-info" type="button">타겟찾기</button>
         </span>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="form-group row">
+    <label for="exampleInputEmail2" class="col-sm-3 col-form-label">상대위치 마진</label>
+    <div class="col-sm-9">
+      <div class="input-group col-xs-12">
+        <input name="select8" id="select8" value="<%=ruleInstance['value']?ruleInstance['value']['select8']:""%>"  type="text" class="form-control" placeholder="0">
       </div>
     </div>
   </div>

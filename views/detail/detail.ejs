@@ -13,6 +13,9 @@
           <a href='/detail_preview?key=<%=entity['key']%>&revision=<%=entity['revision']%>'>
             소스보기
           </a>
+          <a href='cloudjson://load?key=<%=entity['key']%>&revision=<%=entity['revision']%>'>
+            앱으로보기
+          </a>
           <a href="javascript:previewNext();">
             다음>>
           </a>
@@ -73,7 +76,12 @@
   };
 
   $(function(){
-    ruleFormLoad('targetComponent', <%-targetComponentRuleId!=null? "'"+targetComponentRuleId+"'":"null"%>);
+
+    <%if(ruleId == null || ruleId == ''){%>
+      ruleFormLoad('targetComponent', <%-targetComponentRuleId!=null? "'"+targetComponentRuleId+"'":"null"%>);
+    <%}else{%>
+      ruleFormLoad('', '<%=ruleId%>');
+    <%}%>
 
     $( "#sketchSelector" ).dialog({
       autoOpen: false,
@@ -267,16 +275,13 @@
           <thead>
             <tr>
               <th>
-                type
+                Type
               </th>
               <th>
-                값1
+                대상
               </th>
               <th>
-                값2
-              </th>
-              <th>
-                값3
+                Value
               </th>
               <th>
                 수정
@@ -313,14 +318,34 @@
                   %>
                   <i class="fa <%=icon%>"/>
                 </td>
+
                 <td>
-                  <%=ruleInstance[i]['value']['select1']%>
+                  <%
+                    for(var j=1;j<2;j++)
+                    {
+                      var key = 'select' + j
+                      if(ruleInstance[i]['value'][key])
+                      {%>
+                          <%=ruleInstance[i]['value'][key]%>
+                      <%}
+                    }
+
+                  %>
+
                 </td>
+
                 <td>
-                  <%=ruleInstance[i]['value']['select2']%>
-                </td>
-                <td>
-                  <%=ruleInstance[i]['value']['select3']%>
+                  <%
+                    for(var j=2;j<20;j++)
+                    {
+                      var key = 'select' + j
+                      if(ruleInstance[i]['value'][key])
+                      {%>
+                          <%=key%> = <%=ruleInstance[i]['value'][key]%><br/>
+                      <%}
+                    }
+
+                  %>
                 </td>
                 <td>
                   <a href="javascript:ruleFormLoad('<%=ruleInstance[i]['type']%>', '<%=ruleInstance[i]['ruleId']%>');">
