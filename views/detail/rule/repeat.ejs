@@ -1,0 +1,112 @@
+<script>
+function clNameClick(clName)
+{
+  $('#select1').val(clName);
+}
+</script>
+
+
+<div class="form-group row">
+  <label for="exampleInputEmail2" class="col-sm-3 col-form-label">노드선택</label>
+  <div class="col-sm-9">
+    <div class="input-group col-xs-12">
+      <input name="select1" id="select1" value="<%=ruleInstance['value']?ruleInstance['value']['select1']:""%>"  type="text" class="form-control" placeholder="타겟 선택">
+      <span class="input-group-append">
+        <button id="select1Button" onclick="javascript:pickSketch('select1');" class="file-upload-browse btn btn-info" type="button">타겟찾기</button>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="form-group row">
+  <label class="col-sm-3 col-form-label">반복타입</label>
+  <div class="btn-group" role="group" aria-label="Basic example">
+    <script>
+    </script>
+    <input type="hidden" name="select2" id="select2" value="<%=ruleInstance['value']?ruleInstance['value']['select2']:""%>"/>
+    <script>
+      function select2(index){
+        $('#select2').val(index);
+        //alert('call ' + index);
+        for(var i=0;i<5;i++)
+        {
+          if(i==Number(index))
+          {
+            //alert('on ' + $('#select2'+(i)).length);
+            $('#select2'+(i)).addClass('btn-outline-danger');
+            $('#select2'+(i)).removeClass('btn-outline-secondary');
+          }
+          else {
+            //alert('off ' + $('#select2'+(i)).length);
+            $('#select2'+(i)).addClass('btn-outline-secondary');
+            $('#select2'+(i)).removeClass('btn-outline-danger');
+          }
+        }
+      }
+      $(function(){
+        select2(<%=ruleInstance['value']?ruleInstance['value']['select2']:"0"%>);
+      });
+    </script>
+    <a href="javascript:select2(0);">
+      <button id="select20" type="button" class="btn btn-outline-warning icon-btn" title='우측으로'>
+        <i class="fa fa-align-left"></i> 우측
+      </button>
+    </a>
+
+    <a href="javascript:select2(1);">
+      <button id="select21" type="button" class="btn btn-outline-secondary icon-btn" title='하단으로'>
+        <i class="fa fa-align-center"></i> 아래쪽
+      </button>
+    </a>
+
+    <a href="javascript:select2(2);">
+      <button id="select22" type="button" class="btn btn-outline-secondary icon-btn" title='그리드형태'>
+        <i class="fa fa-align-right"></i> 그리드
+      </button>
+    </a>
+
+    <a href="javascript:select2(3);">
+      <button id="select23" type="button" class="btn btn-outline-secondary icon-btn" title='뷰페이저형태'>
+        <i class="fa fa-align-right"></i> 뷰페이저
+      </button>
+    </a>
+
+    <a href="javascript:select2(4);">
+      <button id="select24" type="button" class="btn btn-outline-secondary icon-btn" title='뷰페이저형태'>
+        <i class="fa fa-align-right"></i> 가로스크롤
+      </button>
+    </a>
+  </div>
+</div>
+
+<div class="form-group row">
+  <label for="exampleInputEmail2" class="col-sm-3 col-form-label">배열데이터선택</label>
+  <div class="col-sm-9">
+    <div class="input-group col-xs-12">
+      <input name="select3" id="select3" value="<%=ruleInstance['value']?ruleInstance['value']['select3']:""%>" type="text" class="form-control" placeholder="블록 선택">
+      <span class="input-group-append">
+        <button id="select3Button" onclick="javascript:pickData('select3');" class="file-upload-browse btn btn-info" type="button">배열데이터찾기</button>
+      </span>
+    </div>
+  </div>
+</div>
+
+
+<div class="form-group row">
+  <label for="exampleInputEmail2" class="col-sm-3 col-form-label">마진</label>
+  <div class="col-sm-9">
+    <div class="input-group col-xs-12">
+      <input name="select4" id="select4" value="<%=ruleInstance['value']?ruleInstance['value']['select4']:""%>"  type="text" class="form-control" placeholder="0">
+    </div>
+  </div>
+</div>
+
+
+<div class="form-group row">
+  <label for="exampleInputEmail2" class="col-sm-3 col-form-label">그리드 컬럼</label>
+  <div class="col-sm-9">
+    <div class="input-group col-xs-12">
+      <input name="select5" id="select5" value="<%=ruleInstance['value']?ruleInstance['value']['select5']:""%>"  type="text" class="form-control" placeholder="1">
+    </div>
+  </div>
+</div>

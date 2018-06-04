@@ -13,15 +13,20 @@
           <a href='/detail_preview?key=<%=entity['key']%>&revision=<%=entity['revision']%>'>
             소스보기
           </a>
-          <a href='cloudjson://load?key=<%=entity['key']%>&revision=<%=entity['revision']%>'>
+          <a href='javascript:toApp();'>
             앱으로보기
           </a>
           <a href="javascript:previewNext();">
             다음>>
           </a>
-
         </h4>
+        <script>
+          function toApp()
+          {
+              document.location.href = "cloudjson://load?key=<%=entity['key']%>&revision=<%=entity['revision']%>&index=" + data_index;
+          }
 
+        </script>
         <style type="text/css">
           .clpreview {
             display: -webkit-flex; /* Safari */
@@ -192,20 +197,27 @@
     $.ajax({
       url: "/sampleData?key=<%=entity['key']%>&revision=<%=entity['revision']%>&index="+0
     }).done(function(res) {
+
+      //만약 이 노드가 반복노드의 하위에 있다면, 그 하위를 루트로 보고 선택하게끔 한다.
+
       var opt = {
           change: function(data) { /* called on every change */ },
           propertyclick: function(path) {
             if(confirm('선택하시겠습니까?'))
             {
                 $('#dataSelector').dialog("close");
-
+                //['benefit']['app']
                 console.log(Object.prototype.toString.call(path));
-                console.log(path);
                 var res = path.split("][");
-                vv = res[res.length-1];
-                vv = vv.split("]")[0];
-                vv = vv.replace(/'/g , "");
-                vv = vv.replace('[' , "");
+                var vv = '';
+                for(var i=0;i<res.length;i++)
+                {
+                  if(i > 0)
+                  {
+                    vv = vv + '>';
+                  }
+                  vv = vv + res[i].replace(/'/g , "").replace('[' , "").replace(']' , "");;
+                }
                 $('#'+gcallbackInputId).val(vv);
             }
           },

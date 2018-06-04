@@ -77,10 +77,19 @@ const rules = [
 			type:'layout',
 			name:'레이아웃 설정',
 			description:'가변좌우상하, 센터, 넥스트 정렬',
-			icon:'fa-arrows-h',
+			icon:'fa-columns',
 			unique: false,
 			elements:['node','data']
 	},
+	{
+			type:'repeat',
+			name:'반복 노드',
+			description:'데이터의 길이에 따라 노드를 반복시킨다.',
+			icon:'fa-cubes',
+			unique: false,
+			elements:['node','data']
+	},
+
 ];
 
 
@@ -586,8 +595,6 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 		  var outpath = path.join(__dirname, './file/', fileTempKey);
 			var b64 = base64_encode(zip);
 			extract(zip, {dir: outpath}, function (err) {
-				console.log('extract finished - ' + err);
-
 				var key = getSketchKey(outpath);
 				var revision = '10000';
 
@@ -628,6 +635,7 @@ MongoClient.connect('mongodb://muyoungko:83174584@ds243059.mlab.com:43059/sketch
 						'update': String(Date.now()),
 						'deployJson' : deployJson
 					};
+
 					db.collection('entity').update(json, { $set: newvalue }, { upsert: true }, (err, result) => {
 						if (err) {
 							func(false, err);
