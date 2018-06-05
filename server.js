@@ -821,6 +821,31 @@ function getTargetFromRuleInstance(ruleInstance)
 	}
 	return targetBlock;
 }
+
+function getJsonFromObject(path, json)
+{
+
+	//console.log(path);
+	var element
+	if(path.indexOf('>') > 0)
+	{
+		element = path.substring(0, path.indexOf('>'));
+		var rest = path.substring(path.indexOf('>') +1 , path.length);
+		var isnum = /^\d+$/.test(element);
+		if(isnum)
+		{
+			return getJsonFromObject(rest, json[Number(element)]);
+		}
+		else
+			return getJsonFromObject(rest, json[element]);
+	}
+	else
+	{
+		element = path;
+		return json[element];
+	}
+}
+
 function wrapCloudHtml(cloudHtml, ruleInstance, sampleDataJson){
 	var wrapedCloudHtml = cloudHtml;
 	for(var i=0;sampleDataJson != null && i<ruleInstance.length;i++)
@@ -854,21 +879,21 @@ function wrapCloudHtml(cloudHtml, ruleInstance, sampleDataJson){
 						r += ttt;
 					}
 					else {
-						r += sampleDataJson[ttt];
+						r += getJsonFromObject(ttt,sampleDataJson);
 					}
 				}
 				wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', r);
 			}
 			else
-				wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', sampleDataJson[select2]);
+				wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', getJsonFromObject(select2,sampleDataJson));
 
 		}else if(type == 'mappingImage'){
-			wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', sampleDataJson[select2]);
+			wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', getJsonFromObject(select2,sampleDataJson));
 		}else if(type == 'mappingLocalImage'){
 			//로컬이미지는 CJConverter의 puiSketchHtml에 그냥 밖혀서 나온다.
 		}
 		else if(type == 'mappingClick'){
-			wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', sampleDataJson[select2]);
+			wrapedCloudHtml = wrapedCloudHtml.replace('{{'+select2+'}}', getJsonFromObject(select2,sampleDataJson));
 		}
 	}
 	return wrapedCloudHtml;
